@@ -1,0 +1,7 @@
+*.swp
+*~
+*.out
+*.log
+*.log.*
+*.bak
+*.class
