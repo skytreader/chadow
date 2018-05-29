@@ -1,12 +1,13 @@
 import click
 
 @click.group()
-def spam():
+def cli():
     pass
 
-@click.command()
-@click.argument("name")
-def createlib(name):
-    print("Creating data library %s..." % name)
+@cli.command()
+def createlib():
+    # print("Creating data library %s..." % name)
+    print("Hello world.")
 
-spam.add_command(createlib)
+if __name__ == "__main__":
+    cli()
