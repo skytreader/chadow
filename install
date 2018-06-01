@@ -2,6 +2,8 @@
 set -e
 source ~/.venvburrito/bin/virtualenvwrapper.sh
 mkdir ~/.chadow
+touch ~/.chadow/config.json
+echo "{}" > ~/.chadow/config.json
 mkvirtualenv chadow -p python3
 workon chadow
 pip install -r requirements.txt
