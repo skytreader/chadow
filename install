@@ -1,0 +1,8 @@
+# vim: set ft=sh
+set -e
+source ~/.venvburrito/bin/virtualenvwrapper.sh
+mkdir ~/.chadow
+mkvirtualenv chadow -p python3
+workon chadow
+pip install -r requirements.txt
+cp chadow.py ~/.chadow

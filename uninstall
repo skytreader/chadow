@@ -1,0 +1,5 @@
+# vim: set ft=sh
+set -e
+source ~/.venvburrito/virtualenvwrapper.sh
+rm -r ~/.chadow
+rmvirtualenv chadow
