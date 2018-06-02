@@ -6,9 +6,20 @@ touch ~/.chadow/config.json
 version="$(cat VERSION)"
 echo "{\"version\": \"$version\"}" > ~/.chadow/config.json
 
+# Turn off error exit since it is too noisy for lsvirtualenv.
+set +e
+chadow_existence="$(lsvirtualenv | grep chadow | wc -l)"
+set -e
+
+echo "existence: $chadow_existence"
+
+if [ "$chadow_existence" == 1 ]; then
+    echo "A chadow virtualenv exists. Please completely uninstall chadow first."
+    exit 1
+fi
+
 # Turn off error exit since, for some reason, this install script halts on
 # mkvirtualenv with exit error on.
-# TODO Should probably have my own check that chadow venv does not exist yet.
 set +e
 mkvirtualenv chadow -p python3
 set -e
