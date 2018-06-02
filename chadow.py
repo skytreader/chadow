@@ -2,7 +2,13 @@ import click
 import os
 import json
 
-VERSION = "0.1.0"
+def get_version():
+    # The VERSION file should have only one line ever.
+    with open("VERSION") as v:
+        for line in v:
+            return line
+
+VERSION = get_version()
 APP_ROOT = os.path.expanduser("~/.chadow")
 CONFIG_NAME = "config.json"
 

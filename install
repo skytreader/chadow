@@ -3,7 +3,8 @@ source ~/.venvburrito/bin/virtualenvwrapper.sh
 set -e -v
 mkdir ~/.chadow
 touch ~/.chadow/config.json
-echo "{}" > ~/.chadow/config.json
+version="$(cat VERSION)"
+echo "{\"version\": \"$version\"}" > ~/.chadow/config.json
 
 # Turn off error exit since, for some reason, this install script halts on
 # mkvirtualenv with exit error on.
