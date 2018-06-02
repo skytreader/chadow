@@ -1,4 +1,5 @@
 import click
+import io
 import os
 import json
 
@@ -6,7 +7,7 @@ def get_version():
     # The VERSION file should have only one line ever.
     with open("VERSION") as v:
         for line in v:
-            return line
+            return line.strip()
 
 VERSION = get_version()
 APP_ROOT = os.path.expanduser("~/.chadow")
@@ -43,12 +44,19 @@ def createlib(name):
             }
 
         config["libraries"] = existing_libraries
+        json.dump(config, cfg_file)
+        print("Library %s registered.")
 
     try:
-        with open(os.path.join(APP_ROOT, CONFIG_NAME)) as config_file:
+        with open(os.path.join(APP_ROOT, CONFIG_NAME), "w+") as config_file:
             __createlib(config_file)
-    except FileNotFoundError:
-        # Maybe a botched install. But let's be forgiving anyway.
+    except io.UnsupportedOperation:
+        # Config file is malormed json. Maybe a botched install. But let's be
+        # forgiving anyway and reformat the malformed config.
+        with open(os.path.join(APP_ROOT, CONFIG_NAME), "w") as config_file:
+            print("WARNING: unreadable json in config file. Reformatting.")
+            config_file.write('{"version": "%s"}')
+
         with open(os.path.join(APP_ROOT, CONFIG_NAME), "w+") as config_file:
             __createlib(config_file)
 
