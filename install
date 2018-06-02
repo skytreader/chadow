@@ -1,10 +1,17 @@
 # vim: set ft=sh:
-set -e
 source ~/.venvburrito/bin/virtualenvwrapper.sh
+set -e -v
 mkdir ~/.chadow
 touch ~/.chadow/config.json
 echo "{}" > ~/.chadow/config.json
+
+# Turn off error exit since, for some reason, this install script halts on
+# mkvirtualenv with exit error on.
+# TODO Should probably have my own check that chadow venv does not exist yet.
+set +e
 mkvirtualenv chadow -p python3
+set -e
+
 workon chadow
 pip install -r requirements.txt
 cp chadow.py ~/.chadow

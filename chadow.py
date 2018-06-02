@@ -15,7 +15,7 @@ def __version_check(cfg_dict):
     Side-effect-ful version check.
     """
     version = cfg_dict.get("version")
-    if version and version != VERSION
+    if version and version != VERSION:
         print("WARNING: loading a chadow config from an old version.")
     elif not version:
         print("WARNING: config does not specify a version.")
