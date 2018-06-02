@@ -3,7 +3,7 @@ import os
 import json
 
 VERSION = "0.1.0"
-APP_ROOT = "~/.chadow"
+APP_ROOT = os.path.expanduser("~/.chadow")
 CONFIG_NAME = "config.json"
 
 @click.group()
@@ -25,7 +25,7 @@ def __version_check(cfg_dict):
 def createlib(name):
     def __createlib(cfg_file):
         config = json.load(cfg_file)
-        __version_check(cfg_dict)
+        __version_check(config)
         existing_libraries = config.get("libraries", {})
 
         if name in existing_libraries:
@@ -40,7 +40,7 @@ def createlib(name):
 
     try:
         with open(os.path.join(APP_ROOT, CONFIG_NAME)) as config_file:
-            __createlib(config_lib)
+            __createlib(config_file)
     except FileNotFoundError:
         # Maybe a botched install. But let's be forgiving anyway.
         with open(os.path.join(APP_ROOT, CONFIG_NAME), "w+") as config_file:
