@@ -6,10 +6,10 @@ touch ~/.chadow/config.json
 version="$(cat VERSION)"
 echo "{\"version\": \"$version\"}" > ~/.chadow/config.json
 
-# Turn off error exit since it is too noisy for lsvirtualenv.
-set +e
+# Turn off verbose since it is too noisy for lsvirtualenv.
+set +v
 chadow_existence="$(lsvirtualenv | grep chadow | wc -l)"
-set -e
+set -v
 
 echo "existence: $chadow_existence"
 
@@ -27,3 +27,5 @@ set -e
 workon chadow
 pip install -r requirements.txt
 cp chadow.py ~/.chadow
+set +v
+echo "Done installing. Do 'workon chadow' to start using chadow."
