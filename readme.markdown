@@ -13,3 +13,5 @@ Install via the included `install` script. This requires virtualenv goodies as
 installed via [virtualenv-burrito](https://github.com/brainsik/virtualenv-burrito).
 
 Create a new data library to track with the `createlib` command.
+
+Register a new storage sector with the `regsector` command.

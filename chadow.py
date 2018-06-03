@@ -12,6 +12,7 @@ def get_version():
 VERSION = get_version()
 APP_ROOT = os.path.expanduser("~/.chadow")
 CONFIG_NAME = "config.json"
+CHADOW_METADATA = ".chadow-metadata"
 
 @click.group()
 def cli():
@@ -85,6 +86,13 @@ def deletelib(name):
     except FileNotFoundError:
         print("ERROR: config file not found. Is chadow installed properly?")
         exit(1)
+
+@cli.command()
+@click.argument("library")
+@click.argument("sector_name")
+@click.argument("sector_path")
+def regsector(library, sector_name, sector_path):
+    pass
 
 if __name__ == "__main__":
     cli()
