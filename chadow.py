@@ -44,21 +44,29 @@ def createlib(name):
             }
 
         config["libraries"] = existing_libraries
-        json.dump(config, cfg_file)
-        print("Library %s registered.")
+        return config
 
+    def __writelib(updated_config, config_filename):
+        with open(config_filename, "w") as config_file:
+            json.dump(updated_config, config_file)
+        
+        print("Created new lib: %s" % name)
+
+    config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
+    updated_config = None
     try:
-        with open(os.path.join(APP_ROOT, CONFIG_NAME), "w+") as config_file:
-            __createlib(config_file)
+        with open(config_filename, "r") as config_file:
+            updated_config = __createlib(config_file)
+        __writelib(updated_config, config_filename)
     except io.UnsupportedOperation:
         # Config file is malormed json. Maybe a botched install. But let's be
         # forgiving anyway and reformat the malformed config.
-        with open(os.path.join(APP_ROOT, CONFIG_NAME), "w") as config_file:
+        with open(config_filename, "w+") as config_file:
             print("WARNING: unreadable json in config file. Reformatting.")
-            config_file.write('{"version": "%s"}')
-
-        with open(os.path.join(APP_ROOT, CONFIG_NAME), "w+") as config_file:
-            __createlib(config_file)
+            config_file.write('{"version": "%s"}' % VERSION)
+            config_file.flush()
+            updated_config = __createlib(config_file)
+        __writelib(updated_config, config_filename)
 
 @cli.command()
 @click.argument("name")
