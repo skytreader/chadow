@@ -2,6 +2,9 @@ import click
 import io
 import os
 import json
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 def get_version():
     # The VERSION file should have only one line ever.
@@ -24,9 +27,9 @@ def __version_check(cfg_dict):
     """
     version = cfg_dict.get("version")
     if version and version != VERSION:
-        print("WARNING: loading a chadow config from an old version.")
+        logging.warning("loading a chadow config from an old version.")
     elif not version:
-        print("WARNING: config does not specify a version.")
+        logging.warning("config does not specify a version.")
 
 @cli.command()
 @click.argument("name")
@@ -37,7 +40,7 @@ def createlib(name):
         existing_libraries = config.get("libraries", {})
 
         if name in existing_libraries:
-            print("ERROR: specified name is already taken. Delete name first if you really want to use this name.")
+            logging.error("specified name is already taken. Delete name first if you really want to use this name.")
             exit(1)
         else:
             existing_libraries[name] = {
@@ -51,7 +54,7 @@ def createlib(name):
         with open(config_filename, "w") as config_file:
             json.dump(updated_config, config_file)
         
-        print("Created new lib: %s" % name)
+        logging.info("Created new lib: %s" % name)
 
     config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
     updated_config = None
@@ -63,7 +66,7 @@ def createlib(name):
         # Config file is malormed json. Maybe a botched install. But let's be
         # forgiving anyway and reformat the malformed config.
         with open(config_filename, "w+") as config_file:
-            print("WARNING: unreadable json in config file. Reformatting.")
+            logging.warning("unreadable json in config file. Reformatting.")
             config_file.write('{"version": "%s"}' % VERSION)
             config_file.flush()
             updated_config = __createlib(config_file)
@@ -81,10 +84,10 @@ def deletelib(name):
             if name in existing_libraries:
                 del existing_libraries[name]
             else:
-                print("ERROR: asked to delete a nonexistent library.")
+                logging.error("asked to delete a nonexistent library.")
                 exit(1)
     except FileNotFoundError:
-        print("ERROR: config file not found. Is chadow installed properly?")
+        logging.error("config file not found. Is chadow installed properly?")
         exit(1)
 
 @cli.command()
