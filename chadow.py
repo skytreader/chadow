@@ -23,13 +23,20 @@ def cli():
 
 def __version_check(cfg_dict):
     """
-    Side-effect-ful version check.
+    Side-effect-ful version check: check config version and inform user as
+    necessary.
     """
     version = cfg_dict.get("version")
     if version and version != VERSION:
         logging.warning("loading a chadow config from an old version.")
     elif not version:
         logging.warning("config does not specify a version.")
+
+def __write_cfg(updated_config, config_filename, log_mesg):
+    with open(config_filename, "w") as config_file:
+        json.dump(updated_config, config_file)
+    
+    logging.info(log_mesg)
 
 @cli.command()
 @click.argument("name")
@@ -50,27 +57,21 @@ def createlib(name):
         config["libraries"] = existing_libraries
         return config
 
-    def __writelib(updated_config, config_filename):
-        with open(config_filename, "w") as config_file:
-            json.dump(updated_config, config_file)
-        
-        logging.info("Created new lib: %s" % name)
-
     config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
     updated_config = None
     try:
         with open(config_filename, "r") as config_file:
             updated_config = __createlib(config_file)
-        __writelib(updated_config, config_filename)
+        __write_cfg(updated_config, config_filename, "Created new lib: %s" % name)
     except io.UnsupportedOperation:
-        # Config file is malormed json. Maybe a botched install. But let's be
+        # Config file is malformed json. Maybe a botched install. But let's be
         # forgiving anyway and reformat the malformed config.
         with open(config_filename, "w+") as config_file:
             logging.warning("unreadable json in config file. Reformatting.")
             config_file.write('{"version": "%s"}' % VERSION)
             config_file.flush()
             updated_config = __createlib(config_file)
-        __writelib(updated_config, config_filename)
+        __write_cfg(updated_config, config_filename, "Created new lib: %s" % name)
 
 @cli.command()
 @click.argument("name")
@@ -78,7 +79,7 @@ def deletelib(name):
     try:
         with open(os.path.join(APP_ROOT, CONFIG_NAME)) as config_file:
             config = json.load(cfg_file)
-            __version_check(cfg_dict)
+            __version_check(config)
             existing_libraries = config.get("libraries", {})
 
             if name in existing_libraries:
@@ -95,7 +96,36 @@ def deletelib(name):
 @click.argument("sector_name")
 @click.argument("sector_path")
 def regsector(library, sector_name, sector_path):
-    pass
+    # TODO Make sure this is atomic.
+    try:
+        config = None
+        config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
+        with open(os.path.join(APP_ROOT, CONFIG_NAME)) as config_file:
+            config = json.load(cfg_file)
+            __version_check(config)
+
+            libsectors = config["libraries"][library]["sectors"]
+            if sector_name in libsectors:
+                logging.error("sector %s already exists in library %s" % (sector_name, library))
+                exit(1)
+            
+        metadata_path = os.path.join(sector_path, CHADOW_METADATA)
+        if os.path.isfile(metadata_path):
+            logging.error("specified sector_path %s is already registered." % sector_path)
+
+        with open(os.path.join(sector_path, CHADOW_METADATA), "w+") as metadata:
+            metadata.write(sector_name)
+        
+        config["libraries"][library]["sectors"][sector_name] = sector_path
+        __write_cfg(
+            config, config_filename,
+            "Created sector %s for library %s at %s." % (sector_name, library, sector_path)
+        )
+    except FileNotFoundError:
+        # Metadata file is opened as "w+" so we can be confident that this is
+        # from opening the config file.
+        logging.error("config file not found. Is chadow installed properly?")
+        exit(1)
 
 if __name__ == "__main__":
     cli()
