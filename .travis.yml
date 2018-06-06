@@ -1,6 +1,7 @@
 language: java
 sudo: required
 install:
-  - git clone https://github.com/sstephenson/bats.git
+  # - git clone https://github.com/sstephenson/bats.git
+  - git clone --depth 1 https://github.com/skytreader/bats.git
   - cd bats
   - ./install.sh /usr/local
