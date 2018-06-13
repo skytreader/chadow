@@ -20,11 +20,13 @@ fi
 
 # Turn off error exit since, for some reason, this install script halts on
 # mkvirtualenv with exit error on.
-set +e
+# Turn off verbose since virtualenv is noisy.
+set +e +v
 mkvirtualenv chadow -p python3
 set -e
 
 workon chadow
+set -v
 pip install -r requirements.txt
 cp chadow.py ~/.chadow
 set +v
