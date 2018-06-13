@@ -22,10 +22,14 @@ fi
 # mkvirtualenv with exit error on.
 # Turn off verbose since virtualenv is noisy.
 set +e +v
+echo "Creating chadow virtualenv..."
 mkvirtualenv chadow -p python3
+echo "virtualenv created."
 set -e
 
+echo "Working on virtualenv..."
 workon chadow
+echo "Now on virtualenv. Turning verbose on again."
 set -v
 pip install -r requirements.txt
 cp chadow.py ~/.chadow
