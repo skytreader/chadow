@@ -1,6 +1,7 @@
 language: java
 sudo: required
 install:
+  - curl -sL https://raw.githubusercontent.com/brainsik/virtualenv-burrito/master/virtualenv-burrito.sh | $SHELL
   - git clone --depth 1 https://github.com/sstephenson/bats.git
   - cd bats
   - sudo ./install.sh /usr/local
