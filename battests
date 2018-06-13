@@ -1,0 +1,13 @@
+# vim: set ft=sh:
+
+setup() {
+    ./install
+}
+
+@test "test that config.json exists after setup" {
+    ls ~/.chadow/config.json
+}
+
+teardown() {
+    ./uninstall
+}
