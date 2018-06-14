@@ -6,6 +6,7 @@ setup() {
 
 @test "test that config.json exists after setup" {
     ls ~/.chadow/config.json
+    config_ver=`jq .version ~/.chadow/config.json`
 }
 
 teardown() {
