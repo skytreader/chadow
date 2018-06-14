@@ -27,6 +27,8 @@ mkvirtualenv chadow -p python3
 echo "virtualenv created."
 set -e
 
+# For some reason, without the next two echo statements, installation fails on
+# Travis CI.
 echo "Working on virtualenv..."
 workon chadow
 echo "Now on virtualenv. Turning verbose on again."
