@@ -2,14 +2,25 @@
 
 setup() {
     ./install
+    source ~/.venvburrito/bin/virtualenvwrapper.sh
+    # NOTE: Do not use `workon`; it fails for some damn reason.
+    sh ~/.virtualenvs/chadow/bin/activate
 }
 
-@test "test that config.json exists after setup" {
+@test "that config.json exists after setup" {
     ls ~/.chadow/config.json
     config_ver=`jq .version ~/.chadow/config.json | sed 's/"//g'`
     repo_ver=`head -n 1 VERSION`
-    echo "$config_ver vs $repo_ver"
     [ "$config_ver" == "$repo_ver" ]
+}
+
+@test "that createlib works as expected" {
+    testp=`which python`
+    echo "$testp"
+    sh ~/.virtualenvs/chadow/bin/activate
+    python chadow.py createlib test1
+    library_sectors=`jq .libraries.test1.sectors ~/.chadow/config.json`
+    [ "$library_sectors" == "{}" ]
 }
 
 teardown() {
