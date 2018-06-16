@@ -1,5 +1,7 @@
 # vim: set ft=sh:
 
+py="/home/$(whoami)/.virtualenvs/chadow/bin/python"
+
 setup() {
     ./install
     source ~/.venvburrito/bin/virtualenvwrapper.sh
@@ -15,10 +17,7 @@ setup() {
 }
 
 @test "that createlib works as expected" {
-    testp=`which python`
-    echo "$testp"
-    sh ~/.virtualenvs/chadow/bin/activate
-    python chadow.py createlib test1
+    $py chadow.py createlib test1
     library_sectors=`jq .libraries.test1.sectors ~/.chadow/config.json`
     [ "$library_sectors" == "{}" ]
 }
