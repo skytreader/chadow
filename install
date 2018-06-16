@@ -30,11 +30,9 @@ set -e
 # For some reason, without the next two echo statements, installation fails on
 # Travis CI.
 echo "Working on virtualenv..."
-set -v -x
 workon chadow
-set +x
 echo "Now on virtualenv. Turning verbose on again."
+set -v
 pip install -r requirements.txt
 cp chadow.py ~/.chadow
-set +v
 echo "Done installing. Do 'workon chadow' to start using chadow."
