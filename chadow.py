@@ -77,13 +77,17 @@ def createlib(name):
 @click.argument("name")
 def deletelib(name):
     try:
-        with open(os.path.join(APP_ROOT, CONFIG_NAME)) as config_file:
-            config = json.load(cfg_file)
+        config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
+        with open(config_filename) as config_file:
+            config = json.load(config_file)
             __version_check(config)
             existing_libraries = config.get("libraries", {})
 
             if name in existing_libraries:
                 del existing_libraries[name]
+                # FIXME is this still necessary?
+                config["libraries"] = existing_libraries
+                __write_cfg(config, config_filename, "Deleted library: %s" % name)
             else:
                 logging.error("asked to delete a nonexistent library.")
                 exit(1)
@@ -101,7 +105,7 @@ def regsector(library, sector_name, sector_path):
         config = None
         config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
         with open(os.path.join(APP_ROOT, CONFIG_NAME)) as config_file:
-            config = json.load(cfg_file)
+            config = json.load(config_file)
             __version_check(config)
 
             libsectors = config["libraries"][library]["sectors"]
