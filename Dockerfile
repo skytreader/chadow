@@ -6,6 +6,7 @@ RUN useradd -m -U -s /bin/bash chadow
 USER chadow
 RUN cd ~ && wget https://raw.githubusercontent.com/brainsik/virtualenv-burrito/master/virtualenv-burrito.sh && chmod +x virtualenv-burrito.sh && ./virtualenv-burrito.sh
 
-COPY . ./chadow
+ENV LC_ALL C.UTF-8
+ENV LANG C.UTF-8
 WORKDIR ./chadow
 ENTRYPOINT /bin/bash -c "source ~/.venvburrito/startup.sh && bats battests"

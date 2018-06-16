@@ -22,6 +22,15 @@ setup() {
     [ "$library_sectors" == "{}" ]
 }
 
+@test "that deletelib works as expected" {
+    $py chadow.py createlib test1
+    library_sectors=`jq .libraries.test1.sectors ~/.chadow/config.json`
+    [ "$library_sectors" == "{}" ]
+    $py chadow.py deletelib test1
+    libraries=`jq .libraries ~/.chadow/config.json`
+    [ "$libraries" == "{}" ]
+}
+
 teardown() {
     ./uninstall
 }
