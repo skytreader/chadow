@@ -13,6 +13,8 @@ setup() {
     config_ver=`jq .version ~/.chadow/config.json | sed 's/"//g'`
     repo_ver=`head -n 1 VERSION`
     [ "$config_ver" == "$repo_ver" ]
+    libraries=`jq .libraries ~/.chadow/config.json`
+    [ $libraries == "{}" ]
 }
 
 @test "that createlib works as expected" {

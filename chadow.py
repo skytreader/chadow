@@ -68,7 +68,7 @@ def createlib(name):
         # forgiving anyway and reformat the malformed config.
         with open(config_filename, "w+") as config_file:
             logging.warning("unreadable json in config file. Reformatting.")
-            config_file.write('{"version": "%s"}' % VERSION)
+            config_file.write('{"version": "%s", "libraries": {}}' % VERSION)
             config_file.flush()
             updated_config = __createlib(config_file)
         __write_cfg(updated_config, config_filename, "Created new lib: %s" % name)
