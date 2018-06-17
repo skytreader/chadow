@@ -1,12 +1,11 @@
 # vim: set ft=sh:
 
+# Necessary because for some reason virtualenv workon, alias, etc. does not
+# work in bats.
 py="/home/$(whoami)/.virtualenvs/chadow/bin/python"
 
 setup() {
     ./install
-    source ~/.venvburrito/bin/virtualenvwrapper.sh
-    # NOTE: Do not use `workon`; it fails for some damn reason.
-    sh ~/.virtualenvs/chadow/bin/activate
 }
 
 @test "that config.json exists after setup" {
@@ -20,6 +19,13 @@ setup() {
     $py chadow.py createlib test1
     library_sectors=`jq .libraries.test1.sectors ~/.chadow/config.json`
     [ "$library_sectors" == "{}" ]
+    
+    echo "Test that createlib won't overwrite existing libraries"
+    set +e
+    $py chadow.py createlib test1
+    recreate_rc=$?
+    set -e
+    [ $recreate_rc -eq 1 ]
 }
 
 @test "that deletelib works as expected" {
@@ -29,6 +35,13 @@ setup() {
     $py chadow.py deletelib test1
     libraries=`jq .libraries ~/.chadow/config.json`
     [ "$libraries" == "{}" ]
+
+    echo "Test that deletelib exits properly when deleting nonexistent library"
+    set +e
+    $py chadow.py deletelib never_existed
+    delete_rc=$?
+    set -e
+    [ $delete_rc -eq 1 ]
 }
 
 teardown() {
