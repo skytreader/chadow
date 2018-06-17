@@ -1,10 +1,6 @@
 language: java
-sudo: required
-install:
-  - curl -sL https://raw.githubusercontent.com/brainsik/virtualenv-burrito/master/virtualenv-burrito.sh | $SHELL
-  - source /home/travis/.venvburrito/startup.sh
-  - sudo apt-get install jq
-  - git clone --depth 1 https://github.com/sstephenson/bats.git
-  - cd bats
-  - sudo ./install.sh /usr/local
-script: cd /home/travis/build/skytreader/chadow/ && bats battests
+services:
+    - docker
+before_script:
+    - docker pull skytreader/chadow
+script: "./dockertest"
