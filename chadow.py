@@ -1,5 +1,4 @@
 import click
-import io
 import os
 import json
 import logging
@@ -63,13 +62,15 @@ def createlib(name):
         with open(config_filename, "r") as config_file:
             updated_config = __createlib(config_file)
         __write_cfg(updated_config, config_filename, "Created new lib: %s" % name)
-    except io.UnsupportedOperation:
+    except json.decoder.JSONDecodeError:
         # Config file is malformed json. Maybe a botched install. But let's be
         # forgiving anyway and reformat the malformed config.
         with open(config_filename, "w+") as config_file:
             logging.warning("unreadable json in config file. Reformatting.")
             config_file.write('{"version": "%s", "libraries": {}}' % VERSION)
             config_file.flush()
+
+        with open(config_filename, "r") as config_file:
             updated_config = __createlib(config_file)
         __write_cfg(updated_config, config_filename, "Created new lib: %s" % name)
 

@@ -30,6 +30,18 @@ setup() {
     [ $recreate_rc -eq 1 ]
 }
 
+@test "that createlib can handle botched installs gracefully" {
+    echo "balderdash" > ~/.chadow/config.json
+    $py chadow.py createlib test1
+
+    config_ver=`jq .version ~/.chadow/config.json | sed 's/"//g'`
+    repo_ver=`head -n 1 VERSION`
+    [ "$config_ver" == "$repo_ver" ]
+    
+    library_sectors=`jq .libraries.test1.sectors ~/.chadow/config.json`
+    [ "$library_sectors" == "{}" ]
+}
+
 @test "that deletelib works as expected" {
     $py chadow.py createlib test1
     library_sectors=`jq .libraries.test1.sectors ~/.chadow/config.json`
