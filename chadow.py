@@ -132,6 +132,8 @@ def regsector(library, sector_name, sector_path):
     except FileNotFoundError:
         # Metadata file is opened as "w+" so we can be confident that this is
         # from opening the config file.
+        import traceback
+        traceback.print_exc()
         logging.error("config file not found. Is chadow installed properly?")
         exit(1)
 
