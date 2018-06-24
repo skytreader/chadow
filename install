@@ -13,7 +13,7 @@ set -v
 
 echo "existence: $chadow_existence"
 
-if [ "$chadow_existence" == 1 ]; then
+if [ "$chadow_existence" != 0 ]; then
     echo "A chadow virtualenv exists. Please completely uninstall chadow first."
     exit 1
 fi
