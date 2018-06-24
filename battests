@@ -58,9 +58,18 @@ setup() {
     [ $delete_rc -eq 1 ]
 }
 
-@test "regsector" {
+@test "that regsector works as expected" {
     $py chadow.py createlib test1
     $py chadow.py regsector test1 sector1 /media/chadow/mock-fs-1
+}
+
+@test "that regsector informs users properly of metadata problems" {
+    $py chadow.py createlib test1
+    set +e
+    $py chadow.py regsector test1 sector1 /media/totally-wrong
+    totes_wrong=$?
+    set -e
+    [ $totes_wrong -eq 2 ]
 }
 
 teardown() {
