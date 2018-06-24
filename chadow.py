@@ -107,6 +107,7 @@ def regsector(library, sector_name, sector_path):
         config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
         with open(os.path.join(APP_ROOT, CONFIG_NAME)) as config_file:
             config = json.load(config_file)
+            logging.info("Found config")
             __version_check(config)
 
             libsectors = config["libraries"][library]["sectors"]
@@ -118,10 +119,12 @@ def regsector(library, sector_name, sector_path):
         if os.path.isfile(metadata_path):
             logging.error("specified sector_path %s is already registered." % sector_path)
 
+        logging.info("writing metadata...")
         with open(os.path.join(sector_path, CHADOW_METADATA), "w+") as metadata:
             metadata.write(sector_name)
         
         config["libraries"][library]["sectors"][sector_name] = sector_path
+        logging.info("Updating cfg...")
         __write_cfg(
             config, config_filename,
             "Created sector %s for library %s at %s." % (sector_name, library, sector_path)

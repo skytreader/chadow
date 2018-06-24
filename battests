@@ -58,6 +58,11 @@ setup() {
     [ $delete_rc -eq 1 ]
 }
 
+@test "regsector" {
+    $py chadow.py createlib test1
+    $py chadow.py regsector test1 sector1 /media/mock-fs-1
+}
+
 teardown() {
     ./uninstall
 }
