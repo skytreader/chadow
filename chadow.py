@@ -127,6 +127,7 @@ def regsector(library, sector_name, sector_path):
         try:
             with open(os.path.join(sector_path, CHADOW_METADATA), "w+") as metadata:
                 metadata.write(sector_name)
+                metadata.flush()
         except FileNotFoundError:
             logging.error("metadata can't be opened. Please check the sector path and/or the permissions to the path.")
             exit(METADATA_NOT_FOUND)

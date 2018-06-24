@@ -61,9 +61,9 @@ setup() {
 @test "that regsector works as expected" {
     $py chadow.py createlib test1
     $py chadow.py regsector test1 sector1 /media/chadow/mock-fs-1
-    metadata_linecount=`wc -l /media/chadow/mock-fs-1/.chadow-metadata`
+    metadata_linecount=`wc -l /media/chadow/mock-fs-1/.chadow-metadata | awk '{print $1}'`
     echo "$metadata_linecount"
-    [ "$metadata_linecount" == 1 ]
+    [ $metadata_linecount -eq 1 ]
 }
 
 @test "that regsector informs users properly of metadata problems" {
