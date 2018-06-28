@@ -9,6 +9,9 @@ else
     if [ "$can_use" != "y" ]; then
         exit 1
     fi
+    if [ -d ~/mock-fs-1/.chadow-metadata ]; then
+        rm ~/mock-fs-1/.chadow-metadata
+    fi
 fi
 
 if [ ! -d ~/mock-fs-2 ]; then
@@ -18,6 +21,9 @@ else
     read can_use
     if [ "$can_use" != "y" ]; then
         exit 1
+    fi
+    if [ -d ~/mock-fs-2/.chadow-metadata ]; then
+        rm ~/mock-fs-2/.chadow-metadata
     fi
 fi
 

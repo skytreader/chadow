@@ -17,7 +17,6 @@ CONFIG_NAME = "config.json"
 CHADOW_METADATA = ".chadow-metadata"
 
 # Exit codes
-# FIXME Some exit instances probably don't conform at all to these conventions.
 CONFIG_NOT_FOUND = 1
 METADATA_NOT_FOUND = 2
 STATE_CONFLICT = 3
@@ -123,6 +122,7 @@ def regsector(library, sector_name, sector_path):
         metadata_path = os.path.join(sector_path, CHADOW_METADATA)
         if os.path.isfile(metadata_path):
             logging.error("specified sector_path %s is already registered." % sector_path)
+            exit(STATE_CONFLICT)
 
         try:
             with open(os.path.join(sector_path, CHADOW_METADATA), "w+") as metadata:
