@@ -65,15 +65,6 @@ setup() {
     [ "$metadata" == "sector1" ]
 }
 
-@test "that regsector informs users properly of metadata problems" {
-    $py chadow.py createlib test1
-    set +e
-    $py chadow.py regsector test1 sector1 /media/totally-wrong
-    totes_wrong=$?
-    set -e
-    [ $totes_wrong -eq 2 ]
-}
-
 @test "that regsector will not relabel existing sectors" {
     $py chadow.py createlib test1
     $py chadow.py regsector test1 sector1 /media/chadow/mock-fs-1
@@ -85,12 +76,21 @@ setup() {
     [ $relabel -eq 3 ]
 }
 
+@test "that regsector informs users properly of metadata problems" {
+    $py chadow.py createlib test1
+    set +e
+    $py chadow.py regsector test1 sector1 /media/totally-wrong
+    totes_wrong=$?
+    set -e
+    [ $totes_wrong -eq 2 ]
+}
+
 teardown() {
     ./uninstall
-    if [ -d /media/chadow/mock-fs-1/.chadow-metadata ]; then
-        rm -r /media/chadow/mock-fs-1/.chadow-metadata
+    if [ -f /media/chadow/mock-fs-1/.chadow-metadata ]; then
+        rm /media/chadow/mock-fs-1/.chadow-metadata
     fi
-    if [ -d /media/chadow/mock-fs-2/.chadow-metadata ]; then
-        rm -r /media/chadow/mock-fs-2/*
+    if [ -f /media/chadow/mock-fs-2/.chadow-metadata ]; then
+        rm /media/chadow/mock-fs-2/.chadow-metadata
     fi
 }
