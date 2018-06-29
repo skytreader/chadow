@@ -58,7 +58,7 @@ setup() {
     $py chadow.py deletelib never_existed
     delete_rc=$?
     set -e
-    [ $delete_rc -eq 1 ]
+    [ $delete_rc -eq 3 ]
 }
 
 @test "that regsector works as expected" {
