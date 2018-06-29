@@ -109,6 +109,7 @@ def deletelib(name: str):
 @click.argument("sector_path")
 def regsector(library: str, sector_name: str, sector_path: str):
     # TODO Make sure this is atomic.
+    logging.info("asked to register sector %s" % sector_path)
     try:
         config = None
         config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
