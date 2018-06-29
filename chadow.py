@@ -1,3 +1,5 @@
+from typing import Dict
+
 import click
 import os
 import json
@@ -25,7 +27,7 @@ STATE_CONFLICT = 3
 def cli():
     pass
 
-def __version_check(cfg_dict):
+def __version_check(cfg_dict: Dict[str, str]):
     """
     Side-effect-ful version check: check config version and inform user as
     necessary.
