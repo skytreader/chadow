@@ -38,7 +38,7 @@ def __version_check(cfg_dict: Dict[str, str]):
     elif not version:
         logging.warning("config does not specify a version.")
 
-def __write_cfg(updated_config, config_filename, log_mesg):
+def __write_cfg(updated_config: Dict[str, str], config_filename: str, log_mesg: str):
     with open(config_filename, "w") as config_file:
         json.dump(updated_config, config_file)
     
@@ -46,7 +46,7 @@ def __write_cfg(updated_config, config_filename, log_mesg):
 
 @cli.command()
 @click.argument("name")
-def createlib(name):
+def createlib(name: str):
     def __createlib(cfg_file):
         config = json.load(cfg_file)
         __version_check(config)
@@ -83,7 +83,7 @@ def createlib(name):
 
 @cli.command()
 @click.argument("name")
-def deletelib(name):
+def deletelib(name: str):
     try:
         config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
         with open(config_filename) as config_file:
@@ -98,7 +98,7 @@ def deletelib(name):
                 __write_cfg(config, config_filename, "Deleted library: %s" % name)
             else:
                 logging.error("asked to delete a nonexistent library.")
-                exit(STATE_CONLICT)
+                exit(STATE_CONFLICT)
     except FileNotFoundError:
         logging.error("config file not found. Is chadow installed properly?")
         exit(CONFIG_NOT_FOUND)
@@ -107,7 +107,7 @@ def deletelib(name):
 @click.argument("library")
 @click.argument("sector_name")
 @click.argument("sector_path")
-def regsector(library, sector_name, sector_path):
+def regsector(library: str, sector_name: str, sector_path: str):
     # TODO Make sure this is atomic.
     try:
         config = None
