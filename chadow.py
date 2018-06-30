@@ -47,7 +47,7 @@ def __write_cfg(updated_config: Dict[str, str], config_filename: str, log_mesg: 
 @cli.command()
 @click.argument("name")
 def createlib(name: str):
-    def __createlib(cfg_file):
+    def __createlib(cfg_file, comparator="filename"):
         config = json.load(cfg_file)
         __version_check(config)
         existing_libraries = config.get("libraries", {})
@@ -58,6 +58,7 @@ def createlib(name: str):
         else:
             existing_libraries[name] = {
                 "sectors": {}
+                "comparator": comparator
             }
 
         config["libraries"] = existing_libraries
