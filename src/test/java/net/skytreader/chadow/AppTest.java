@@ -1,4 +1,4 @@
-package net.skytreader.kode;
+package net.skytreader.chadow;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
