@@ -10,7 +10,7 @@ description = """chadow"""
 sourceCompatibility = 1.5
 targetCompatibility = 1.5
 
-mainClassName = "net.skytreader.kode.App"
+mainClassName = "net.skytreader.chadow.App"
 
 repositories {
         
