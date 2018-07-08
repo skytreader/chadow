@@ -16,13 +16,13 @@ setup() {
     config_ver=`jq .version ~/.chadow/config.json | sed 's/"//g'`
     repo_ver=`head -n 1 VERSION`
     [ "$config_ver" == "$repo_ver" ]
-    libraries=`jq .libraries ~/.chadow/config.json`
+    libraries=`jq .libraryMapping ~/.chadow/config.json`
     [ $libraries == "{}" ]
 }
 
 @test "that createlib works as expected" {
     $py chadow.py createlib test1
-    library_sectors=`jq .libraries.test1.sectors ~/.chadow/config.json`
+    library_sectors=`jq .libraryMapping.test1.sectors ~/.chadow/config.json`
     [ "$library_sectors" == "{}" ]
     
     echo "Test that createlib won't overwrite existing libraries"
@@ -41,16 +41,16 @@ setup() {
     repo_ver=`head -n 1 VERSION`
     [ "$config_ver" == "$repo_ver" ]
     
-    library_sectors=`jq .libraries.test1.sectors ~/.chadow/config.json`
+    library_sectors=`jq .libraryMapping.test1.sectors ~/.chadow/config.json`
     [ "$library_sectors" == "{}" ]
 }
 
 @test "that deletelib works as expected" {
     $py chadow.py createlib test1
-    library_sectors=`jq .libraries.test1.sectors ~/.chadow/config.json`
+    library_sectors=`jq .libraryMapping.test1.sectors ~/.chadow/config.json`
     [ "$library_sectors" == "{}" ]
     $py chadow.py deletelib test1
-    libraries=`jq .libraries ~/.chadow/config.json`
+    libraries=`jq .libraryMapping ~/.chadow/config.json`
     [ "$libraries" == "{}" ]
 
     echo "Test that deletelib exits properly when deleting nonexistent library"

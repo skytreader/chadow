@@ -50,7 +50,7 @@ def createlib(name: str):
     def __createlib(cfg_file, comparator="filename"):
         config = json.load(cfg_file)
         __version_check(config)
-        existing_libraries = config.get("libraries", {})
+        existing_libraries = config.get("libraryMapping", {})
 
         if name in existing_libraries:
             logging.error("specified name is already taken. Delete name first if you really want to use this name.")
@@ -61,7 +61,7 @@ def createlib(name: str):
                 "comparator": comparator
             }
 
-        config["libraries"] = existing_libraries
+        config["libraryMapping"] = existing_libraries
         return config
 
     config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
@@ -75,7 +75,7 @@ def createlib(name: str):
         # forgiving anyway and reformat the malformed config.
         with open(config_filename, "w+") as config_file:
             logging.warning("unreadable json in config file. Reformatting.")
-            config_file.write('{"version": "%s", "libraries": {}}' % VERSION)
+            config_file.write('{"version": "%s", "libraryMapping": {}}' % VERSION)
             config_file.flush()
 
         with open(config_filename, "r") as config_file:
@@ -90,12 +90,12 @@ def deletelib(name: str):
         with open(config_filename) as config_file:
             config = json.load(config_file)
             __version_check(config)
-            existing_libraries = config.get("libraries", {})
+            existing_libraries = config.get("libraryMapping", {})
 
             if name in existing_libraries:
                 del existing_libraries[name]
                 # FIXME is this still necessary?
-                config["libraries"] = existing_libraries
+                config["libraryMapping"] = existing_libraries
                 __write_cfg(config, config_filename, "Deleted library: %s" % name)
             else:
                 logging.error("asked to delete a nonexistent library.")
@@ -118,7 +118,7 @@ def regsector(library: str, sector_name: str, sector_path: str):
             config = json.load(config_file)
             __version_check(config)
 
-            libsectors = config["libraries"][library]["sectors"]
+            libsectors = config["libraryMapping"][library]["sectors"]
             if sector_name in libsectors:
                 logging.error("sector %s already exists in library %s" % (sector_name, library))
                 exit(STATE_CONFLICT)
@@ -136,7 +136,7 @@ def regsector(library: str, sector_name: str, sector_path: str):
             logging.error("metadata can't be opened. Please check the sector path and/or the permissions to the path.")
             exit(METADATA_NOT_FOUND)
         
-        config["libraries"][library]["sectors"][sector_name] = sector_path
+        config["libraryMapping"][library]["sectors"][sector_name] = sector_path
         __write_cfg(
             config, config_filename,
             "Created sector %s for library %s at %s." % (sector_name, library, sector_path)

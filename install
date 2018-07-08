@@ -4,7 +4,7 @@ set -e -v
 mkdir ~/.chadow
 touch ~/.chadow/config.json
 version="$(cat VERSION)"
-echo "{\"version\": \"$version\", \"libraries\":{}}" > ~/.chadow/config.json
+echo "{\"version\": \"$version\", \"libraryMapping\":{}}" > ~/.chadow/config.json
 
 # Turn off verbose since it is too noisy for lsvirtualenv.
 set +v

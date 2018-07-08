@@ -1,18 +1,12 @@
 package net.skytreader.chadow.models;
 
 public class Library{
-    private String name;
     private String comparator;
     private Sector[] sectors;
 
-    public Library(String name, String comparator, Sector[] sectors){
-        this.name = name;
+    public Library(String comparator, Sector[] sectors){
         this.comparator = comparator;
         this.sectors = sectors;
-    }
-
-    public String getName(){
-        return name;
     }
 
     public String getComparator(){
@@ -21,10 +15,6 @@ public class Library{
 
     public Sector[] getSectors(){
         return sectors;
-    }
-
-    public void setName(String name){
-        this.name = name;
     }
 
     public void setComparator(String comparator){
