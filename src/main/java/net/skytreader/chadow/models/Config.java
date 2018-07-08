@@ -2,26 +2,26 @@ package net.skytreader.chadow.models;
 
 public class Config{
     private String version;
-    private Library[] libraries;
+    private LibraryMapping libraryMapping;
 
-    public Config(String version, Library[] libraries){
+    public Config(String version, LibraryMapping libraryMapping){
         this.version = version;
-        this.libraries = libraries;
+        this.libraryMapping = libraryMapping;
     }
 
     public String getVersion(){
         return version;
     }
 
-    public Library[] getLibraries(){
-        return libraries;
+    public LibraryMapping getLibraries(){
+        return libraryMapping;
     }
 
     public void setVersion(String version){
         this.version = version;
     }
 
-    public void setLibraries(Library[] libraries){
-        this.libraries = libraries;
+    public void setLibraries(LibraryMapping libraryMapping){
+        this.libraryMapping = libraryMapping;
     }
 }
