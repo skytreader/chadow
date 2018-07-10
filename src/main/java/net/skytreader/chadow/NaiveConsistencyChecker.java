@@ -10,7 +10,7 @@ import java.util.Stack;
 public class NaiveConsistencyChecker implements ChadowConsistencyChecker{
     @Override
     public void indexSector(String library, String sectorName, String sectorPath) throws IOException{
-        String chadowIndexPath = "/home/chad/" + library + "/" + sectorPath;
+        String chadowIndexPath = "/home/chad/.chadow/" + library + "/" + sectorPath;
         File chadowIndexDir = new File(chadowIndexPath);
 
         if (chadowIndexDir.isDirectory()){
@@ -26,7 +26,7 @@ public class NaiveConsistencyChecker implements ChadowConsistencyChecker{
     }
 
     private void createIndex(String library, String sectorName, String sectorPath) throws IOException{
-        String indexPath = "/home/chad/" + library + "/" + sectorPath + "/index";
+        String indexPath = "/home/chad/.chadow/" + library + "/" + sectorPath + "/index";
         PrintWriter pw = new PrintWriter(new FileWriter(indexPath));
 
         try{

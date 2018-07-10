@@ -11,6 +11,11 @@ import java.util.Stack;
 
 import net.skytreader.chadow.models.Config;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Options;
+
 /**
  * Hello world!
  *
@@ -45,9 +50,17 @@ public class App
         Config c = JSON.parseObject(jsonConfig, Config.class);
     }
 
+    public static void cli(String[] args) throws Exception{
+        Options opt = new Options();
+        opt.addOption("cmd", true, "command to run");
+
+        CommandLineParser clp = new DefaultParser();
+        CommandLine cmdLine = clp.parse(opt, args);
+    }
+
     public static void main(String[] args){
         try{
-            jsonTest();
+            cli(args);
         } catch(Exception e){
             e.printStackTrace();
         }
