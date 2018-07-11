@@ -12,6 +12,12 @@ targetCompatibility = 1.5
 
 mainClassName = "net.skytreader.chadow.App"
 
+run {
+    if (project.hasProperty("appArgs")) {
+        args Eval.me(appArgs)
+    }
+}
+
 repositories {
         
      maven { url "http://repo.maven.apache.org/maven2" }

@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
+import java.util.Arrays;
 import java.util.Stack;
 
 import net.skytreader.chadow.models.Config;
@@ -56,10 +57,17 @@ public class App
 
         CommandLineParser clp = new DefaultParser();
         CommandLine cmdLine = clp.parse(opt, args);
+
+        if (cmdLine.hasOption("cmd")){
+            System.out.println("cmd is present");
+        } else{
+            System.out.println("cmd is not present");
+        }
     }
 
     public static void main(String[] args){
         try{
+            System.out.println(Arrays.toString(args));
             cli(args);
         } catch(Exception e){
             e.printStackTrace();
