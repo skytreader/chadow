@@ -59,7 +59,8 @@ public class App
         CommandLine cmdLine = clp.parse(opt, args);
 
         if (cmdLine.hasOption("cmd")){
-            System.out.println("cmd is present");
+            System.out.println("cmd is present " + cmdLine.getOptionValue("cmd"));
+            System.out.println("getArgs: " + Arrays.toString(cmdLine.getArgs()));
         } else{
             System.out.println("cmd is not present");
         }
