@@ -2,5 +2,5 @@ language: java
 services:
     - docker
 before_script:
-    - docker pull skytreader/chadow
+    - docker pull skytreader/chadow:dev
 script: "./dockertest"
