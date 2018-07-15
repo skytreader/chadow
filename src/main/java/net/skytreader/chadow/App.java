@@ -54,6 +54,7 @@ public class App
     public static void cli(String[] args) throws Exception{
         Options opt = new Options();
         opt.addOption("cmd", true, "command to run");
+        opt.addOption("cdir", true, "directory that contains the chadow config");
 
         CommandLineParser clp = new DefaultParser();
         CommandLine cmdLine = clp.parse(opt, args);
