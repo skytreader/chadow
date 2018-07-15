@@ -11,24 +11,26 @@ import java.util.Map;
 import java.util.Hashtable;
 
 import net.skytreader.chadow.ChadowConsistencyChecker;
+import net.skytreader.chadow.NaiveConsistencyChecker;
 
 import org.apache.commons.cli.CommandLine;
 
 public class MethodSigMapper{
-    interface ArgConverter<T> {
-        T convert(String s);
+    interface Caller {
+        void callMethod(String[] args, ChadowConsistencyChecker cmdSrc) throws Exception;
     }
 
-    private static ArgConverter<String> stringConverter = (String s) -> s;
-    private static ArgConverter<Integer> intConverter = (String s) -> Integer.parseInt(s);
+    private static Caller indexSectorCaller = (String[] args, ChadowConsistencyChecker cmdSrc) -> cmdSrc.indexSector(args[0], args[1], args[2]);
 
-    private static final Map<String, ArgConverter[]> NAME_SIG_MAPPER = new Hashtable();
+    private static Map<String, Caller> CMD_CALLER_MAP = new Hashtable();
 
     static{
-        NAME_SIG_MAPPER.put("indexSector", new ArgConverter[]{stringConverter, stringConverter, stringConverter});
+        CMD_CALLER_MAP.put("indexSector", indexSectorCaller);
     }
 
-    public static void interpret(CommandLine cmdLine){
+    public static void interpret(CommandLine cmdLine) throws Exception{
         String cmd = cmdLine.getOptionValue("cmd");
+        Caller c = CMD_CALLER_MAP.get(cmd);
+        c.callMethod(cmdLine.getArgs(), new NaiveConsistencyChecker());
     }
 }
