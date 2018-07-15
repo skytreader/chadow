@@ -6,6 +6,13 @@ touch ~/.chadow/config.json
 version="$(cat VERSION)"
 echo "{\"version\": \"$version\", \"libraryMapping\":{}}" > ~/.chadow/config.json
 
+echo "Building and installing chadow Java dependencies..."
+gradle jar
+echo "Making JAR 'executable'..."
+sudo mv build/libs/chadow-$version.jar /opt/bin/
+sudo echo "java -jar chadow-$version.jar \$@" > /opt/bin/chadow
+sudo chmod +x /opt/bin/chadow
+
 # Turn off verbose since it is too noisy for lsvirtualenv.
 set +v
 chadow_existence="$(lsvirtualenv | grep chadow | wc -l)"

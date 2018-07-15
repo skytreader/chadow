@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     openjdk-8-jdk
 RUN wget -P /tmp https://services.gradle.org/distributions/gradle-4.8.1-bin.zip && \
-    unzip -d /usr/bin /tmp/gradle-4.8.1-bin.zip
+    unzip -d /tmp /tmp/gradle-4.8.1-bin.zip && \
+    mv /tmp/gradle-4.8.1/bin/gradle /usr/bin
 RUN git clone --depth 1 https://github.com/sstephenson/bats.git && cd bats && ./install.sh /usr/local
 RUN useradd -m -U -s /bin/bash chadow
 USER chadow
