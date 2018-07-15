@@ -57,7 +57,7 @@ def createlib(name: str):
             exit(STATE_CONFLICT)
         else:
             existing_libraries[name] = {
-                "sectors": {}
+                "sectors": {},
                 "comparator": comparator
             }
 
