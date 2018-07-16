@@ -11,9 +11,10 @@ RUN apt-get update && apt-get install -y \
     # Needed by virtualenv-burrito!
     curl \
     openjdk-8-jdk
-RUN wget -P /tmp https://services.gradle.org/distributions/gradle-4.8.1-bin.zip && \
-    unzip -d /tmp /tmp/gradle-4.8.1-bin.zip && \
-    mv /tmp/gradle-4.8.1/bin/gradle /usr/bin
+RUN mkdir /opt/bin && \
+    wget -P /opt/bin https://services.gradle.org/distributions/gradle-4.8.1-bin.zip && \
+    unzip -d /opt/bin /opt/bin/gradle-4.8.1-bin.zip && \
+    ln -s /opt/bin/gradle-4.8.1/bin/gradle /usr/bin/gradle
 RUN git clone --depth 1 https://github.com/sstephenson/bats.git && cd bats && ./install.sh /usr/local
 RUN useradd -m -U -s /bin/bash chadow
 USER chadow
