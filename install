@@ -9,9 +9,9 @@ echo "{\"version\": \"$version\", \"libraryMapping\":{}}" > ~/.chadow/config.jso
 echo "Building and installing chadow Java dependencies..."
 gradle jar
 echo "Making JAR 'executable'..."
-sudo mv build/libs/chadow-$version.jar /opt/bin/
-sudo echo "java -jar chadow-$version.jar \$@" > /opt/bin/chadow
-sudo chmod +x /opt/bin/chadow
+mv build/libs/chadow-$version.jar /opt/bin/
+echo "java -jar chadow-$version.jar \$@" > /opt/bin/chadow
+chmod +x /opt/bin/chadow
 
 # Turn off verbose since it is too noisy for lsvirtualenv.
 set +v
