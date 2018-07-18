@@ -7,8 +7,8 @@ version="$(cat VERSION)"
 echo "{\"version\": \"$version\", \"libraryMapping\":{}}" > ~/.chadow/config.json
 
 echo "Building and installing chadow Java dependencies..."
-ls -l /
-ls -l /chadow
+ls -l /home/chadow
+ls -l /home/chadow/chadow
 gradle --stacktrace jar
 echo "Making JAR 'executable'..."
 mv build/libs/chadow-$version.jar /opt/bin/

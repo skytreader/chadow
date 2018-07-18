@@ -25,5 +25,5 @@ RUN cd ~ && wget https://raw.githubusercontent.com/brainsik/virtualenv-burrito/m
 
 ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
-WORKDIR ./chadow
+WORKDIR ~/chadow
 ENTRYPOINT /bin/bash -c "source ~/.venvburrito/startup.sh && bats battests"

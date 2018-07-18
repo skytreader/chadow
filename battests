@@ -8,7 +8,6 @@ EHD_1="/media/chadow/mock-fs-1"
 EHD_2="/media/chadow/mock-fs-2"
 
 setup() {
-    chown chadow:chadow -R /chadow
     ./install
 }
 
