@@ -10,7 +10,7 @@ echo "Building and installing chadow Java dependencies..."
 gradle --stacktrace jar
 echo "Making JAR 'executable'..."
 mv build/libs/chadow-$version.jar /opt/bin/
-echo "java -jar chadow-$version.jar \$@" > /opt/bin/chadow
+echo "java -jar /opt/bin/chadow-$version.jar \$@" > /opt/bin/chadow
 chmod +x /opt/bin/chadow
 
 # Turn off verbose since it is too noisy for lsvirtualenv.
