@@ -11,6 +11,10 @@ setup() {
     ./install
 }
 
+@test "chadow java bin" {
+    chadow -cmd blah
+}
+
 @test "that config.json exists after setup" {
     ls ~/.chadow/config.json
     config_ver=`jq .version ~/.chadow/config.json | sed 's/"//g'`

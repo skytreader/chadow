@@ -1,4 +1,8 @@
 # vim: set ft=sh:
+version="$(cat VERSION)"
+rm /opt/bin/chadow
+rm /opt/bin/chadow-$version.jar
+
 source ~/.venvburrito/bin/virtualenvwrapper.sh
 set -e
 rmvirtualenv chadow

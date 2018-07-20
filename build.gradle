@@ -18,6 +18,16 @@ run {
     }
 }
 
+jar {
+    manifest {
+        attributes "Main-Class": "net.skytreader.chadow.App"
+    }
+
+    from {
+        configurations.compile.collect {it.isDirectory() ? it : zipTree(it)}
+    }
+}
+
 repositories {
         
      maven { url "http://repo.maven.apache.org/maven2" }

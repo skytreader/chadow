@@ -27,7 +27,7 @@ else
     fi
 fi
 
-docker run --mount type=bind,source="$(pwd)",target=/chadow \
+docker run --mount type=bind,source="$(pwd)",target=/home/chadow/chadow \
            --mount type=bind,source="/home/$(whoami)/mock-fs-1",target=/media/chadow/mock-fs-1 \
            --mount type=bind,source="/home/$(whoami)/mock-fs-2",target=/media/chadow/mock-fs-2 \
            skytreader/chadow
