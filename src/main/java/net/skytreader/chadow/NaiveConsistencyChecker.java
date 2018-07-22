@@ -69,4 +69,9 @@ public class NaiveConsistencyChecker implements ChadowConsistencyChecker{
             pw.close();
         }
     }
+
+    protected String createStringId(String sectorName, String sectorPath){
+        String sanitizedSectorPath = sectorPath.replace(File.separatorChar, '-');
+        return sectorName + File.separator + sanitizedSectorPath;
+    }
 }
