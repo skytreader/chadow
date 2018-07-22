@@ -26,7 +26,8 @@ public class NaiveConsistencyChecker implements ChadowConsistencyChecker{
 
     @Override
     public void indexSector(String library, String sectorName, String sectorPath) throws IOException{
-        String chadowIndexPath = this.configLocation + File.separator + library + File.separator + sectorPath;
+        String sectorId = createSectorId(sectorName, sectorPath);
+        String chadowIndexPath = this.configLocation + File.separator + library + File.separator + sectorId;
         File chadowIndexDir = new File(chadowIndexPath);
 
         if (chadowIndexDir.isDirectory()){
@@ -42,7 +43,8 @@ public class NaiveConsistencyChecker implements ChadowConsistencyChecker{
     }
 
     private void createIndex(String library, String sectorName, String sectorPath) throws IOException{
-        String indexPath = this.configLocation + File.separator + library + File.separator + sectorPath + File.separator + "index";
+        String sectorId = createSectorId(sectorName, sectorPath);
+        String indexPath = this.configLocation + File.separator + library + File.separator + sectorId + File.separator + "index";
         PrintWriter pw = new PrintWriter(new FileWriter(indexPath));
 
         try{
@@ -70,7 +72,7 @@ public class NaiveConsistencyChecker implements ChadowConsistencyChecker{
         }
     }
 
-    protected String createStringId(String sectorName, String sectorPath){
+    protected String createSectorId(String sectorName, String sectorPath){
         String sanitizedSectorPath = sectorPath.replace(File.separatorChar, '-');
         return sectorName + File.separator + sanitizedSectorPath;
     }
