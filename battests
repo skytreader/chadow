@@ -5,7 +5,9 @@
 py="/home/$(whoami)/.virtualenvs/chadow/bin/python"
 
 EHD_1="/media/chadow/mock-fs-1"
+EHD_1_SANITIZED="-media-chadow-mock-fs-1"
 EHD_2="/media/chadow/mock-fs-2"
+EHD_2_SANITIZED="-media-chadow-mock-fs-2"
 
 setup() {
     ./install

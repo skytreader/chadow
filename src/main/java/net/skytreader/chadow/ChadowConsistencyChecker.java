@@ -1,5 +1,11 @@
 package net.skytreader.chadow;
 
+/**
+Interface for methods that will check the consistency of libraries across sectors.
+All sectorPaths are expected to be absolute paths from the root directory ("/",
+in this case as we are currently constrained to Linuxland).
+*/
+
 import java.io.IOException;
 
 public interface ChadowConsistencyChecker{

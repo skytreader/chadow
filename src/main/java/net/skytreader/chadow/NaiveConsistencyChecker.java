@@ -72,8 +72,9 @@ public class NaiveConsistencyChecker implements ChadowConsistencyChecker{
         }
     }
 
+    // FIXME This can be confused by directories in the path with a dash in their names.
     protected String createSectorId(String sectorName, String sectorPath){
         String sanitizedSectorPath = sectorPath.replace(File.separatorChar, '-');
-        return sectorName + File.separator + sanitizedSectorPath;
+        return sectorName + sanitizedSectorPath;
     }
 }
