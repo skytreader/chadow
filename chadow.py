@@ -22,6 +22,7 @@ CHADOW_METADATA = ".chadow-metadata"
 CONFIG_NOT_FOUND = 1
 METADATA_NOT_FOUND = 2
 STATE_CONFLICT = 3
+INVALID_ARG = 4
 
 @click.group()
 def cli():
@@ -111,6 +112,9 @@ def deletelib(name: str):
 def regsector(library: str, sector_name: str, sector_path: str):
     # TODO Make sure this is atomic.
     logging.info("asked to register sector %s" % sector_path)
+    if os.path.sep in sector_name:
+        logging.error("sector_name could not contain the path separator %s" % os.path.sep)
+        exit(INVALID_ARG)
     try:
         config = None
         config_filename = os.path.join(APP_ROOT, CONFIG_NAME)

@@ -92,6 +92,15 @@ setup() {
     [ $totes_wrong -eq 2 ]
 }
 
+@test "that regsector does not accept sector names with the path separator" {
+    $py chadow.py createlib test1
+    set +e
+    $py chadow.py regsector test1 sector1/spam $EHD_1
+    invalid_name=$?
+    set -e
+    [ $invalid_name -eq 4 ]
+}
+
 teardown() {
     ./uninstall
     if [ -f $EHD_1/.chadow-metadata ]; then
