@@ -11,22 +11,22 @@ public class NaiveConsistencyChecker implements ChadowConsistencyChecker{
     
     /**
     The directory containing the chadow config file. It is assumed that this
-    directory is then exclusively for chadow behind-the-scenes stuff. This string
-    will always end with the file separator for the runtime OS.
+    directory is then exclusively for chadow behind-the-scenes stuff. This
+    <em>never</em> ends with the OS-specific file separator.
     */
     private String configLocation;
     
     public NaiveConsistencyChecker(String configLocation){
-        if (configLocation.endsWith(File.separator)){
+        if (!configLocation.endsWith(File.separator)){
             this.configLocation = configLocation;
         } else{
-            this.configLocation = configLocation + File.separator;
+            this.configLocation = configLocation.substring(0, configLocation.length());
         }
     }
 
     @Override
     public void indexSector(String library, String sectorName, String sectorPath) throws IOException{
-        String chadowIndexPath = this.configLocation + library + File.separator + sectorPath;
+        String chadowIndexPath = this.configLocation + File.separator + library + File.separator + sectorPath;
         File chadowIndexDir = new File(chadowIndexPath);
 
         if (chadowIndexDir.isDirectory()){
@@ -42,7 +42,7 @@ public class NaiveConsistencyChecker implements ChadowConsistencyChecker{
     }
 
     private void createIndex(String library, String sectorName, String sectorPath) throws IOException{
-        String indexPath = this.configLocation + library + File.separator + sectorPath + File.separator + "index";
+        String indexPath = this.configLocation + File.separator + library + File.separator + sectorPath + File.separator + "index";
         PrintWriter pw = new PrintWriter(new FileWriter(indexPath));
 
         try{
