@@ -14,4 +14,8 @@ installed via [virtualenv-burrito](https://github.com/brainsik/virtualenv-burrit
 
 Create a new data library to track with the `createlib` command.
 
-Register a new storage sector with the `regsector` command.
+Register a new storage sector with the `regsector` command. This command assumes
+that the physical storage medium they are mapped to, when mounted on your
+computer, mount to distinct special files (i.e., in the loosest terms, don't
+have two flash drives with the same name because then they will collide on the
+same `/media/user/flash_drive_name` path).
