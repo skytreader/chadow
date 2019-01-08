@@ -121,11 +121,6 @@ def regsector(library: str, sector_name: str, sector_path: str):
         with open(os.path.join(APP_ROOT, CONFIG_NAME)) as config_file:
             config = json.load(config_file)
             __version_check(config)
-
-            libsectors = config["libraryMapping"][library]["sectors"]
-            if sector_name in libsectors:
-                logging.error("sector %s already exists in library %s" % (sector_name, library))
-                exit(STATE_CONFLICT)
             
         metadata_path = os.path.join(sector_path, CHADOW_METADATA)
         if os.path.isfile(metadata_path):
@@ -140,7 +135,10 @@ def regsector(library: str, sector_name: str, sector_path: str):
             logging.error("metadata can't be opened. Please check the sector path and/or the permissions to the path.")
             exit(METADATA_NOT_FOUND)
         
-        config["libraryMapping"][library]["sectors"][sector_name] = sector_path
+        if config["libraryMapping"][library].get("sectors"):
+            config["libraryMapping"][library]["sectors"][sector_name].append(sector_path)
+        else:
+            config["libraryMapping"][library]["sectors"][sector_name] = [sector_path]
         __write_cfg(
             config, config_filename,
             "Created sector %s for library %s at %s." % (sector_name, library, sector_path)
