@@ -1,31 +1,23 @@
 # vim: set ft=sh:
 set -e
 
-if [ ! -d  ~/mock-fs-1 ]; then
-    mkdir ~/mock-fs-1
-else
-    echo "~/mock-fs-1 exists. Are you sure chadow testing can use this? y/n"
-    read can_use
-    if [ "$can_use" != "y" ]; then
-        exit 1
+check_dir(){
+    if [ ! -d  $1 ]; then
+        mkdir $1
+    else
+        echo "$1 exists. Are you sure chadow testing can use this? y/n"
+        read can_use
+        if [ "$can_use" != "y" ]; then
+            exit 1
+        fi
+        if [ -d $1/.chadow-metadata ]; then
+            rm $1/.chadow-metadata
+        fi
     fi
-    if [ -d ~/mock-fs-1/.chadow-metadata ]; then
-        rm ~/mock-fs-1/.chadow-metadata
-    fi
-fi
+}
 
-if [ ! -d ~/mock-fs-2 ]; then
-    mkdir ~/mock-fs-2
-else
-    echo "~/mock-fs-2 exists. Are you sure chadow testing can use this? y/n"
-    read can_use
-    if [ "$can_use" != "y" ]; then
-        exit 1
-    fi
-    if [ -d ~/mock-fs-2/.chadow-metadata ]; then
-        rm ~/mock-fs-2/.chadow-metadata
-    fi
-fi
+check_dir ~/mock-fs-1
+check_dir ~/mock-fs-2
 
 docker run --mount type=bind,source="$(pwd)",target=/home/chadow/chadow \
            --mount type=bind,source="/home/$(whoami)/mock-fs-1",target=/media/chadow/mock-fs-1 \
