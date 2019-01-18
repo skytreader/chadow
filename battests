@@ -13,10 +13,6 @@ setup() {
     ./install
 }
 
-@test "chadow java bin" {
-    chadow -cmd blah
-}
-
 @test "that config.json exists after setup" {
     ls ~/.chadow/config.json
     config_ver=`jq .version ~/.chadow/config.json | sed 's/"//g'`
@@ -72,6 +68,8 @@ setup() {
     $py chadow.py regsector test1 sector1 $EHD_1
     metadata=`head -n1 $EHD_1/.chadow-metadata`
     [ "$metadata" == "sector1" ]
+    list_contents=`jq .libraryMapping.sector1 ~/.chadow/config.json | grep $EHD_1 | sed 's/"//g'`
+    [ "$list_contents" == "\"$EHD_1\"" ]
     $py chadow.py regsector test1 sector1 $EHD_2
 }
 
