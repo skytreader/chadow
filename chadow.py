@@ -39,6 +39,14 @@ def __version_check(cfg_dict: Dict[str, str]):
     elif not version:
         logging.warning("config does not specify a version.")
 
+def __config_check(full_config_name: str):
+    config = {}
+    with open(full_config_name) as config_file:
+        config = json.load(config_file)
+        __version_check(config)
+
+    return config
+
 def __write_cfg(updated_config: Dict[str, str], config_filename: str, log_mesg: str):
     with open(config_filename, "w") as config_file:
         json.dump(updated_config, config_file)
@@ -106,22 +114,22 @@ def deletelib(name: str):
         exit(CONFIG_NOT_FOUND)
 
 @cli.command()
+def regsector(library: str, sector_name: str):
+    pass
+
+@cli.command()
 @click.argument("library")
 @click.argument("sector_name")
 @click.argument("sector_path")
-def regsector(library: str, sector_name: str, sector_path: str):
+def regmedia(library: str, sector_name: str, sector_path: str):
     # TODO Make sure this is atomic.
     logging.info("asked to register sector %s" % sector_path)
     if os.path.sep in sector_name:
         logging.error("sector_name could not contain the path separator %s" % os.path.sep)
         exit(INVALID_ARG)
     try:
-        config = None
         config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
-        with open(os.path.join(APP_ROOT, CONFIG_NAME)) as config_file:
-            config = json.load(config_file)
-            __version_check(config)
-            
+        config = __config_check(config_filename)
         metadata_path = os.path.join(sector_path, CHADOW_METADATA)
         if os.path.isfile(metadata_path):
             logging.error("specified sector_path %s is already registered." % sector_path)
@@ -143,6 +151,7 @@ def regsector(library: str, sector_name: str, sector_path: str):
             config, config_filename,
             "Created sector %s for library %s at %s." % (sector_name, library, sector_path)
         )
+        exit(0)
     except FileNotFoundError:
         logging.error("config file not found. Is chadow installed properly?")
         exit(CONFIG_NOT_FOUND)
