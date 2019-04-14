@@ -1,3 +1,7 @@
 {"version": "0.1.0", "libraryMapping":{
-    "ehd_cluster": ["ehd1", "ehd2"]
+    "photosLibrary": {
+        "sectors": {
+            "ehdSector": ["ehd1", "ehd2"]
+        }
+    }
 }}
