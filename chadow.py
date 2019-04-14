@@ -123,7 +123,7 @@ def regsector(library: str, sector_name: str):
 @click.argument("sector_path")
 def regmedia(library: str, sector_name: str, sector_path: str):
     # TODO Make sure this is atomic.
-    logging.info("asked to register sector %s" % sector_path)
+    logging.info("asked to register media %s in sector." % (sector_path, sector_name))
     if os.path.sep in sector_name:
         logging.error("sector_name could not contain the path separator %s" % os.path.sep)
         exit(INVALID_ARG)
