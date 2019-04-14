@@ -11,6 +11,8 @@ EHD_2_SANITIZED="-media-chadow-mock-fs-2"
 
 setup() {
     ./install
+    chown -R chadow:chadow $EHD_1
+    chown -R chadow:chadow $EHD_2
 }
 
 @test "that config.json exists after setup" {
