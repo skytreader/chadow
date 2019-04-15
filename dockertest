@@ -4,6 +4,7 @@ set -e
 check_dir(){
     if [ ! -d  $1 ]; then
         mkdir $1
+        chmod a+w $1
         ls -l ~
     else
         echo "$1 exists. Are you sure chadow testing can use this? y/n"
