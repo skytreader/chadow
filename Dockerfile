@@ -6,20 +6,18 @@ RUN apt-get update && apt-get install -y \
     python \
     python3 \
     python-setuptools \
-    unzip \
-    wget \
     # Needed by virtualenv-burrito!
+    wget \
     curl \
-    sudo \
-    openjdk-8-jdk
-RUN mkdir /opt/bin && \
-    wget -P /opt/bin https://services.gradle.org/distributions/gradle-4.8.1-bin.zip && \
-    unzip -d /opt/bin /opt/bin/gradle-4.8.1-bin.zip && \
-    ln -s /opt/bin/gradle-4.8.1/bin/gradle /usr/bin/gradle
+    unzip \
+    # End stuff needed by virtualenv-burrito
+    sudo
+RUN mkdir /opt/bin
 RUN git clone --depth 1 https://github.com/sstephenson/bats.git && cd bats && ./install.sh /usr/local
 RUN useradd -m -U -s /bin/bash chadow && \
     usermod -a -G root chadow && \
-    chmod 775 -R /opt/bin
+    chmod 775 -R /opt/bin && \
+    chown chadow:chadow /media
 USER chadow
 RUN cd ~ && wget https://raw.githubusercontent.com/brainsik/virtualenv-burrito/master/virtualenv-burrito.sh && chmod +x virtualenv-burrito.sh && ./virtualenv-burrito.sh
 
