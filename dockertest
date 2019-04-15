@@ -5,7 +5,6 @@ check_dir(){
     if [ ! -d  $1 ]; then
         mkdir $1
         chmod a+w $1
-        ls -l ~
     else
         echo "$1 exists. Are you sure chadow testing can use this? y/n"
         read can_use
@@ -21,10 +20,17 @@ check_dir(){
 check_dir ~/mock-fs-1
 check_dir ~/mock-fs-2
 
+# Turn off error exit since we want this script to always clean-up after itself
+# regarless of the result of the test.
+set +e
 docker run --mount type=bind,source="$(pwd)",target=/home/chadow/chadow \
            --mount type=bind,source="/home/$(whoami)/mock-fs-1",target=/media/chadow/mock-fs-1 \
            --mount type=bind,source="/home/$(whoami)/mock-fs-2",target=/media/chadow/mock-fs-2 \
            skytreader/chadow
+test_result=$?
+set -e
 
 rm -r ~/mock-fs-1
 rm -r ~/mock-fs-2
+
+exit $test_result
