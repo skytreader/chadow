@@ -1,4 +1,4 @@
-language: java
+language: python
 dist: xenial
 sudo: required
 services:
