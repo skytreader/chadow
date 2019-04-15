@@ -115,8 +115,31 @@ def deletelib(name: str):
         exit(CONFIG_NOT_FOUND)
 
 @cli.command()
+@click.argument("library")
+@click.argument("sector_name")
 def regsector(library: str, sector_name: str):
-    pass
+    logging.info("Registering sector %s for library %s." % (sector_name, library))
+    if os.path.sep in sector_name:
+        logging.error("sector_name could not contain the path separator %s" % os.path.sep)
+        exit(INVALID_ARG)
+
+    try:
+        config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
+        config = __config_check(config_filename)
+        library_sectors = config["libraryMapping"][library]["sectors"]
+
+        if library_sectors.get(sector_name):
+            logging.error("Asked to register a sector that already exists")
+            exit(STATE_CONFLICT)
+        else:
+            library_sectors[sector_name] = []
+            __write_cfg(
+                config, config_filename,
+                "Created sector %s for library %s." % (sector_name, library)
+            )
+    except FileNotFoundError:
+        logging.error("config file not found. Is chadow installed properly?")
+        exit(CONFIG_NOT_FOUND)
 
 @cli.command()
 @click.argument("library")
@@ -125,9 +148,7 @@ def regsector(library: str, sector_name: str):
 def regmedia(library: str, sector_name: str, sector_path: str):
     # TODO Make sure this is atomic.
     logging.info("asked to register media %s in sector %s." % (sector_path, sector_name))
-    if os.path.sep in sector_name:
-        logging.error("sector_name could not contain the path separator %s" % os.path.sep)
-        exit(INVALID_ARG)
+
     try:
         config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
         config = __config_check(config_filename)
@@ -153,7 +174,7 @@ def regmedia(library: str, sector_name: str, sector_path: str):
             config["libraryMapping"][library]["sectors"][sector_name] = [sector_path]
         __write_cfg(
             config, config_filename,
-            "Created sector %s for library %s at %s." % (sector_name, library, sector_path)
+            "Registered media %s for library %s at %s." % (sector_name, library, sector_path)
         )
         exit(0)
     except FileNotFoundError:

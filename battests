@@ -93,13 +93,19 @@ setup() {
     [ $totes_wrong -eq 2 ]
 }
 
-@test "that regmedia does not accept sector names with the path separator" {
+@test "that regsector does not accept sector names with the path separator" {
+    # Why impose this constraint again?
     $py chadow.py createlib test1
     set +e
-    $py chadow.py regmedia test1 sector1/spam $EHD_1
+    $py chadow.py regsector test1 sector1/spam
     invalid_name=$?
     set -e
     [ $invalid_name -eq 4 ]
+}
+
+@test "that regsector works just as expected" {
+    $py chadow.py createlib test1
+    $py chadow.py regsector test1 sector1
 }
 
 teardown() {
