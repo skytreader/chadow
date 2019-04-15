@@ -1,7 +1,9 @@
 language: java
+dist: xenial
 sudo: required
 services:
     - docker
 before_script:
     - docker pull skytreader/chadow:dev
+    - chown -R chadow:chadow /media/chad/mock-fs-1
 script: "./dockertest"
