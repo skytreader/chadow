@@ -23,6 +23,7 @@ CONFIG_NOT_FOUND = 1
 METADATA_NOT_FOUND = 2
 STATE_CONFLICT = 3
 INVALID_ARG = 4
+PERMISSIONS_PROBLEM = 5
 
 @click.group()
 def cli():
@@ -140,8 +141,11 @@ def regmedia(library: str, sector_name: str, sector_path: str):
                 metadata.write(sector_name)
                 metadata.flush()
         except FileNotFoundError:
-            logging.error("metadata can't be opened. Please check the sector path and/or the permissions to the path.")
+            logging.error("metadata can't be opened. Please check the sector path provided.")
             exit(METADATA_NOT_FOUND)
+        except PermissionError:
+            logging.error("can't open metadata file. Are you sure we have the proper permissions to the path?")
+            exit(PERMISSIONS_PROBLEM)
         
         if config["libraryMapping"][library].get("sectors"):
             config["libraryMapping"][library]["sectors"][sector_name].append(sector_path)
