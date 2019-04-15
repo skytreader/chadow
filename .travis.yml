@@ -4,5 +4,5 @@ sudo: required
 services:
     - docker
 before_script:
-    - docker pull skytreader/chadow:dev
+    - docker pull skytreader/chadow
 script: "./dockertest"
