@@ -1,5 +1,5 @@
 # vim: set ft=sh:
-if [ $FULL_TESTING -eq 1]; then
+if [ $FULL_TESTING -eq 1 ]; then
     source ~/.venvburrito/bin/virtualenvwrapper.sh
 fi
 set -e -v
