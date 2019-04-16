@@ -33,7 +33,7 @@ check_dir ~/mock-fs-2
 
 docker_image="skytreader/chadow"
 if [ "$mode" == "quick" ]; then
-    docker_image="skytreader/chadow:quicktest"
+    docker_image="chadow:quicktest"
 fi
 
 # Turn off error exit since we want this script to always clean-up after itself

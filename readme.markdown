@@ -40,3 +40,13 @@ testing.
 Every effort is done to keep the two testing environments similar. The only
 notable difference is that the Docker image for full testing inherits from
 Ubuntu (the target platform of chadow) while quick testing inherits from Debian/
+
+### Running quick tests
+
+Just build the Docker image locally,
+
+    docker build -t chadow:quicktest -f Dockerfile-quicktest .
+
+Then invoke
+
+    ./dockertest quick
