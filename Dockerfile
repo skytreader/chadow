@@ -25,4 +25,4 @@ ENV LANG C.UTF-8
 ENV PATH="${PATH}:/opt/bin"
 ENV FULL_TESTING=1
 WORKDIR /home/chadow/chadow
-ENTRYPOINT /bin/bash -c "echo $(pwd) && source ~/.venvburrito/startup.sh && bats battests"
+ENTRYPOINT /bin/bash -c "source ~/.venvburrito/startup.sh && bats battests"
