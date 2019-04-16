@@ -17,7 +17,11 @@ INVALID_ARG=4
 PERMISSIONS_PROBLEM=5
 
 setup() {
-    ./install
+    if [ "$FULL_TESTING" == "1" ]; then
+        ./install
+    else
+        echo "Looks like we are in quick testing mode. Assuming the environment is pre-installed."
+    fi
 }
 
 @test "that config.json exists after setup" {
