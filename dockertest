@@ -17,18 +17,34 @@ check_dir(){
     fi
 }
 
+mode="full"
+
+if [ ! -z "$1" ]; then
+    mode="$1"
+fi
+
+if [ "$mode" != "full" ] && [ "$mode" != "quick" ]; then
+    echo "mode can only be either full or quick. Given: $mode"
+    exit 1
+fi
+
 check_dir ~/mock-fs-1
 check_dir ~/mock-fs-2
 
+docker_image="skytreader/chadow"
+if [ "$mode" == "quick" ]; then
+    docker_image="skytreader/chadow:quicktest"
+fi
+
 # Turn off error exit since we want this script to always clean-up after itself
 # regarless of the result of the test.
-set +e
+set +e -x
 docker run --mount type=bind,source="$(pwd)",target=/home/chadow/chadow \
            --mount type=bind,source="/home/$(whoami)/mock-fs-1",target=/media/chadow/mock-fs-1 \
            --mount type=bind,source="/home/$(whoami)/mock-fs-2",target=/media/chadow/mock-fs-2 \
-           skytreader/chadow
+           $docker_image
 test_result=$?
-set -e
+set -e +x
 
 rm -r ~/mock-fs-1
 rm -r ~/mock-fs-2

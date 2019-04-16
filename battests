@@ -1,8 +1,11 @@
 # vim: set ft=sh:
 
-# Necessary because for some reason virtualenv workon, alias, etc. does not
-# work in bats.
-py="/home/$(whoami)/.virtualenvs/chadow/bin/python"
+py="python"
+if [ $FULL_TESTING -eq 1 ]; then
+    # Necessary because for some reason virtualenv workon, alias, etc. does not
+    # work in bats.
+    py="/home/$(whoami)/.virtualenvs/chadow/bin/python"
+fi
 
 EHD_1="/media/chadow/mock-fs-1"
 EHD_1_SANITIZED="-media-chadow-mock-fs-1"
@@ -17,11 +20,7 @@ INVALID_ARG=4
 PERMISSIONS_PROBLEM=5
 
 setup() {
-    if [ "$FULL_TESTING" == "1" ]; then
-        ./install
-    else
-        echo "Looks like we are in quick testing mode. Assuming the environment is pre-installed."
-    fi
+    ./install
 }
 
 @test "that config.json exists after setup" {

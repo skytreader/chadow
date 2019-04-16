@@ -1,7 +1,9 @@
 # vim: set ft=sh:
 version="$(cat VERSION)"
 
-source ~/.venvburrito/bin/virtualenvwrapper.sh
-set -e
-rmvirtualenv chadow
+if [ $FULL_TESTING -eq 1 ]; then
+    source ~/.venvburrito/bin/virtualenvwrapper.sh
+    set -e
+    rmvirtualenv chadow
+fi
 rm -r ~/.chadow

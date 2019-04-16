@@ -19,3 +19,24 @@ that the physical storage medium they are mapped to, when mounted on your
 computer, mount to distinct special files (i.e., in the loosest terms, don't
 have two flash drives with the same name because then they will collide on the
 same `/media/user/flash_drive_name` path).
+
+## Testing
+
+There are two testing modes: full testing and quick testing.
+
+Full testing incorporates a full installation and uninstallation before and
+after each test case. In this sense, we are sure that the commands work as
+expected from a clean install. However, installation means recreating the
+virtualenv on which chadow is supposed to run.
+
+Quick testing, on the other hand, will not recreate the virtualenv everytime. In
+fact, quick testing will not rely on a virtualenv anytime; the Docker image used
+to do quick testing has the Python dependencies specified "natively".
+
+This allows for a faster feedback loop during development (just run quick tests)
+but the changes are still tested thoroughly by CI, which _always_ runs full
+testing.
+
+Every effort is done to keep the two testing environments similar. The only
+notable difference is that the Docker image for full testing inherits from
+Ubuntu (the target platform of chadow) while quick testing inherits from Debian/

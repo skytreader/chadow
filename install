@@ -1,38 +1,42 @@
 # vim: set ft=sh:
-source ~/.venvburrito/bin/virtualenvwrapper.sh
+if [ $FULL_TESTING -eq 1]; then
+    source ~/.venvburrito/bin/virtualenvwrapper.sh
+fi
 set -e -v
 mkdir ~/.chadow
 touch ~/.chadow/config.json
 version="$(cat VERSION)"
 echo "{\"version\": \"$version\", \"libraryMapping\":{}}" > ~/.chadow/config.json
 
-# Turn off verbose since it is too noisy for lsvirtualenv.
-set +v
-chadow_existence="$(lsvirtualenv | grep chadow | wc -l)"
-set -v
-
-echo "existence: $chadow_existence"
-
-if [ "$chadow_existence" != 0 ]; then
-    echo "A chadow virtualenv exists. Please completely uninstall chadow first."
-    exit 1
+if [ $FULL_TESTING -eq 1 ]; then
+    # Turn off verbose since it is too noisy for lsvirtualenv.
+    set +v
+    chadow_existence="$(lsvirtualenv | grep chadow | wc -l)"
+    set -v
+    
+    echo "existence: $chadow_existence"
+    
+    if [ "$chadow_existence" != 0 ]; then
+        echo "A chadow virtualenv exists. Please completely uninstall chadow first."
+        exit 1
+    fi
+    
+    # Turn off error exit since, for some reason, this install script halts on
+    # mkvirtualenv with exit error on.
+    # Turn off verbose since virtualenv is noisy.
+    set +e +v
+    echo "Creating chadow virtualenv..."
+    mkvirtualenv chadow -p python3
+    echo "virtualenv created."
+    set -e
+    
+    # For some reason, without the next two echo statements, installation fails on
+    # Travis CI.
+    echo "Working on virtualenv..."
+    workon chadow
+    echo "Now on virtualenv. Turning verbose on again."
+    set -v
+    pip install -r requirements.txt
 fi
-
-# Turn off error exit since, for some reason, this install script halts on
-# mkvirtualenv with exit error on.
-# Turn off verbose since virtualenv is noisy.
-set +e +v
-echo "Creating chadow virtualenv..."
-mkvirtualenv chadow -p python3
-echo "virtualenv created."
-set -e
-
-# For some reason, without the next two echo statements, installation fails on
-# Travis CI.
-echo "Working on virtualenv..."
-workon chadow
-echo "Now on virtualenv. Turning verbose on again."
-set -v
-pip install -r requirements.txt
 cp chadow.py ~/.chadow
 echo "Done installing. Do 'workon chadow' to start using chadow."

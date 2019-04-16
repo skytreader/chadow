@@ -1,0 +1,20 @@
+# vim: set ft=dockerfile:
+FROM python:3.7.3-stretch
+RUN apt-get update && apt-get install -y \
+    jq \
+    git
+COPY requirements.txt ./
+RUN pip install -r /requirements.txt
+RUN mkdir /opt/bin
+RUN git clone --depth 1 https://github.com/sstephenson/bats.git && cd bats && ./install.sh /usr/local
+RUN useradd -m -U -s /bin/bash chadow && \
+    usermod -a -G root chadow && \
+    chmod 775 -R /opt/bin && \
+    chown chadow:chadow /media
+USER chadow
+ENV FULL_TESTING=0
+ENV LC_ALL C.UTF-8
+ENV LANG C.UTF-8
+ENV PATH="${PATH}:/opt/bin"
+WORKDIR /home/chadow/chadow
+ENTRYPOINT /bin/bash -c "bats battests"
