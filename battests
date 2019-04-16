@@ -72,16 +72,20 @@ setup() {
 
 @test "that regmedia works as expected" {
     $py chadow.py createlib test1
+    $py chadow.py regsector test1 sector1
     $py chadow.py regmedia test1 sector1 $EHD_1
     metadata=`head -n1 $EHD_1/.chadow-metadata`
     [ "$metadata" == "sector1" ]
     list_contents=`jq .libraryMapping.test1.sectors.sector1 ~/.chadow/config.json | grep $EHD_1 | sed 's/"//g' | sed 's/ //g'`
+    cat ~/.chadow/config.json
+    echo $list_contents
     [ "$list_contents" == "$EHD_1" ]
     $py chadow.py regmedia test1 sector1 $EHD_2
 }
 
 @test "that regmedia will not relabel existing sectors" {
     $py chadow.py createlib test1
+    $py chadow.py regsector test1 sector1
     $py chadow.py regmedia test1 sector1 $EHD_1
     set +e
     $py chadow.py regmedia test1 relabel $EHD_1

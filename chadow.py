@@ -170,13 +170,16 @@ def regmedia(library: str, sector_name: str, sector_path: str):
         
         if config["libraryMapping"][library].get("sectors"):
             config["libraryMapping"][library]["sectors"][sector_name].append(sector_path)
+            __write_cfg(
+                config, config_filename,
+                "Registered media for library %s at sector %s at path %s." % (
+                    library, sector_name, sector_path
+                )
+            )
+            exit(0)
         else:
-            config["libraryMapping"][library]["sectors"][sector_name] = [sector_path]
-        __write_cfg(
-            config, config_filename,
-            "Registered media %s for library %s at %s." % (sector_name, library, sector_path)
-        )
-        exit(0)
+            logging.error("Sector %s not found. Are you sure you have registered this sector before?" % sector_name)
+            exit(STATE_CONFLICT)
     except FileNotFoundError:
         logging.error("config file not found. Is chadow installed properly?")
         exit(CONFIG_NOT_FOUND)
