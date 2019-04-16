@@ -9,6 +9,13 @@ EHD_1_SANITIZED="-media-chadow-mock-fs-1"
 EHD_2="/media/chadow/mock-fs-2"
 EHD_2_SANITIZED="-media-chadow-mock-fs-2"
 
+# Exit codes
+CONFIG_NOT_FOUND=1
+METADATA_NOT_FOUND=2
+STATE_CONFLICT=3
+INVALID_ARG=4
+PERMISSIONS_PROBLEM=5
+
 setup() {
     ./install
 }
@@ -32,7 +39,7 @@ setup() {
     $py chadow.py createlib test1
     recreate_rc=$?
     set -e
-    [ $recreate_rc -eq 3 ]
+    [ $recreate_rc -eq $STATE_CONFLICT ]
 }
 
 @test "that createlib can handle botched installs gracefully" {
@@ -60,7 +67,7 @@ setup() {
     $py chadow.py deletelib never_existed
     delete_rc=$?
     set -e
-    [ $delete_rc -eq 3 ]
+    [ $delete_rc -eq $STATE_CONFLICT ]
 }
 
 @test "that regmedia works as expected" {
@@ -80,8 +87,7 @@ setup() {
     $py chadow.py regmedia test1 relabel $EHD_1
     relabel=$?
     set -e
-    echo $relabel
-    [ $relabel -eq 3 ]
+    [ $relabel -eq $STATE_CONFLICT ]
 }
 
 @test "that regmedia informs users properly of metadata problems" {
@@ -90,7 +96,7 @@ setup() {
     $py chadow.py regmedia test1 sector1 /media/totally-wrong
     totes_wrong=$?
     set -e
-    [ $totes_wrong -eq 2 ]
+    [ $totes_wrong -eq $METADATA_NOT_FOUND ]
 }
 
 @test "that regsector does not accept sector names with the path separator" {
@@ -100,7 +106,7 @@ setup() {
     $py chadow.py regsector test1 sector1/spam
     invalid_name=$?
     set -e
-    [ $invalid_name -eq 4 ]
+    [ $invalid_name -eq $INVALID_ARG ]
 }
 
 @test "that regsector works just as expected" {
