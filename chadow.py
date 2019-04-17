@@ -184,5 +184,19 @@ def regmedia(library: str, sector_name: str, sector_path: str):
         logging.error("config file not found. Is chadow installed properly?")
         exit(CONFIG_NOT_FOUND)
 
+@cli.command()
+@click.argument("library")
+@click.argument("sector_name")
+@click.argument("sector_path")
+def index(library: str, sector_name: str, sector_path: str):
+    logging.info("Indexing %s.%s.%s..." % (library, sector_name, sector_path))
+
+    try:
+        config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
+        config = __config_check(config_filename)
+    except FileNotFoundError:
+        logging.error("config file not found. Is chadow installed properly?")
+        exit(CONFIG_NOT_FOUND)
+
 if __name__ == "__main__":
     cli()
