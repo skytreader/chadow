@@ -1,6 +1,7 @@
 from typing import Dict
 
 import click
+import errno
 import os
 import json
 import logging
@@ -24,6 +25,7 @@ METADATA_NOT_FOUND = 2
 STATE_CONFLICT = 3
 INVALID_ARG = 4
 PERMISSIONS_PROBLEM = 5
+OS_ERROR = 6
 
 @click.group()
 def cli():
@@ -133,6 +135,18 @@ def regsector(library: str, sector_name: str):
             exit(STATE_CONFLICT)
         else:
             library_sectors[sector_name] = []
+            try:
+                os.mkdir(os.path.join(APP_ROOT, sector_name))
+                logging.info("Created sector index directory.")
+            except OSError as e:
+                if e.errno == errno.EXISTS:
+                    logging.info("Sector index directory already exists.")
+                else:
+                    logging.error("Unable to create sector index directory.")
+                    exit(OS_ERROR)
+            except PermissionError:
+                logging.error("No permission to create sector index directory.")
+                exit(PERMISSIONS_PROBLEM)
             __write_cfg(
                 config, config_filename,
                 "Created sector %s for library %s." % (sector_name, library)
@@ -140,6 +154,9 @@ def regsector(library: str, sector_name: str):
     except FileNotFoundError:
         logging.error("config file not found. Is chadow installed properly?")
         exit(CONFIG_NOT_FOUND)
+
+def __normalize_path_separator(path: str):
+    return path.replace(os.path.sep, "+")
 
 @cli.command()
 @click.argument("library")
@@ -201,7 +218,6 @@ def index(library: str, sector_name: str, sector_path: str):
     except PermissionError:
         logging.error("can't open config file. Are you sure we have the proper permissions for it?")
         exit(PERMISSIONS_PROBLEM)
-    p
 
 if __name__ == "__main__":
     cli()

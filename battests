@@ -119,6 +119,7 @@ setup() {
     $py chadow.py regsector test1 sector1
     sector_paths=`jq .libraryMapping.test1.sectors.sector1 ~/.chadow/config.json | sed 's/ //g'`
     [ "$sector_paths" == "[]" ]
+    [ -d ~/.chadow/sector1 ]
 }
 
 teardown() {
