@@ -1,0 +1,30 @@
+{
+    "version": "0.1.0",
+    "index": [
+        {
+            "subdir": "Spam",
+            "index": [
+                "Meatloaf"
+            ]
+        },
+        "Monty Python",
+        "Oracle",
+        "Google",
+        "Sun Microsystems",
+        {
+            "subdir": "Eggs",
+            "index": [
+                {
+                    "subdir": "Prehistoric",
+                    "index": [
+                        "Dinosaur",
+                        "Dodo"
+                    ]
+                },
+                "Chicken",
+                "Duck",
+                "Fish"
+            ]
+        }
+    ]
+}
