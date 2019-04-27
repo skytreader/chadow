@@ -27,6 +27,16 @@ INVALID_ARG = 4
 PERMISSIONS_PROBLEM = 5
 OS_ERROR = 6
 
+class DirectoryIndex(object):
+
+    def __init__(self, is_top_level=True, version=VERSION):
+        self.version = version
+        self.index = []
+        if is_top_level:
+            self.subdir = "."
+        else:
+            self.subdir = ""
+
 @click.group()
 def cli():
     pass
