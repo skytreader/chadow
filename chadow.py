@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List, Optional, Union
 
 import click
 import errno
@@ -8,13 +8,20 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-def get_version():
-    # The VERSION file should have only one line ever.
+def get_version() -> str:
     with open("VERSION") as v:
-        for line in v:
+        vlist = list(v)
+        if len(vlist) > 1:
+            logging.warn("The version file has more than one line.")
+
+        for line in vlist:
             return line.strip()
 
-VERSION = get_version()
+    # The only time execution will get to this is when there is not a single
+    # line to read from the version file.
+    raise Exception("Version file is empty!")
+
+VERSION: str = get_version()
 APP_ROOT = os.path.expanduser("~/.chadow")
 CONFIG_NAME = "config.json"
 CHADOW_METADATA = ".chadow-metadata"
@@ -29,13 +36,18 @@ OS_ERROR = 6
 
 class DirectoryIndex(object):
 
-    def __init__(self, is_top_level=True, version=VERSION):
-        self.version = version
-        self.index = []
-        if is_top_level:
-            self.subdir = "."
-        else:
-            self.subdir = ""
+    def __init__(
+        self,
+        subdir: Optional[str]=None,
+        is_top_level: bool=True,
+        version: str=VERSION
+    ):
+        self.version: str = version
+        self.index: List[Union[str, DirectoryIndex]] = []
+        self.is_top_level = is_top_level
+        self.subdir: Optional[str] = None
+        if not is_top_level:
+            self.subdir = subdir
 
 @click.group()
 def cli():
@@ -53,7 +65,7 @@ def __version_check(cfg_dict: Dict[str, str]):
         logging.warning("config does not specify a version.")
 
 def __config_check(full_config_name: str):
-    config = {}
+    config: Dict = {}
     with open(full_config_name) as config_file:
         config = json.load(config_file)
         __version_check(config)
@@ -149,7 +161,7 @@ def regsector(library: str, sector_name: str):
                 os.mkdir(os.path.join(APP_ROOT, sector_name))
                 logging.info("Created sector index directory.")
             except OSError as e:
-                if e.errno == errno.EXISTS:
+                if e.errno == errno.EEXIST:
                     logging.info("Sector index directory already exists.")
                 else:
                     logging.error("Unable to create sector index directory.")
@@ -217,7 +229,7 @@ def regmedia(library: str, sector_name: str, sector_path: str):
 @click.argument("sector_path")
 def index(library: str, sector_name: str, sector_path: str):
     logging.info("Indexing %s.%s.%s..." % (library, sector_name, sector_path))
-    config = {}
+    config: Dict = {}
 
     try:
         config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
