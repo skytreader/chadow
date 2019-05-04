@@ -43,11 +43,27 @@ class DirectoryIndex(object):
         version: str=VERSION
     ):
         self.version: str = version
-        self.index: List[Union[str, DirectoryIndex]] = []
+        # FIXME: Prevent acyclic structures
+        self.index: Set[Union[str, "DirectoryIndex"]] = set()
         self.is_top_level = is_top_level
         self.subdir: Optional[str] = None
         if not is_top_level:
             self.subdir = subdir
+
+    def __eq__(self, other: "DirectoryIndex"):
+        return all((
+            self.is_top_level == other.is_top_level,
+            self.index == other.index,
+            self.subdir == other.subdir
+        ))
+
+    def __hash__(self, other: "DirectoryIndex"):
+        return hash((
+            self.is_top_level, self.index, self.subdir
+        ))
+
+    def add_to_index(item: Union[str, "DirectoryIndex"]):
+        self.index.add(item)
 
 @click.group()
 def cli():
