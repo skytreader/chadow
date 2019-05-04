@@ -65,6 +65,23 @@ class DirectoryIndex(object):
     def add_to_index(item: Union[str, "DirectoryIndex"]):
         self.index.add(item)
 
+    def to_json(self) -> str:
+        dict_rep = {}
+        if self.is_top_level:
+            dict_rep["version"] = self.version
+        else:
+            dict_rep["subdir"] = self.subdir
+        
+        dict_rep["index"] = []
+
+        for item in self.index:
+            if isinstance(item, str):
+                dict_rep["index"].append(item)
+            else:
+                dict_rep["index"].append(item.to_json)
+
+        return json.dumps(dict_rep)
+
 @click.group()
 def cli():
     pass
