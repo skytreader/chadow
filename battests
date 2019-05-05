@@ -104,6 +104,16 @@ setup() {
     [ $totes_wrong -eq $METADATA_NOT_FOUND ]
 }
 
+@test "that regmedia will not accept paths with the '+' character" {
+    $py chadow.py createlib library
+    $py chadow.py regsector library sector1
+    set +e
+    $py chadow.py regmedia library sector1 /media/audio+video
+    error_code=$?
+    set -e
+    [ $error_code -eq $INVALID_ARG ]
+}
+
 @test "that regsector does not accept sector names with the path separator" {
     # Why impose this constraint again?
     $py chadow.py createlib test1

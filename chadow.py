@@ -22,9 +22,10 @@ def get_version() -> str:
     raise Exception("Version file is empty!")
 
 VERSION: str = get_version()
-APP_ROOT = os.path.expanduser("~/.chadow")
-CONFIG_NAME = "config.json"
-CHADOW_METADATA = ".chadow-metadata"
+APP_ROOT: str = os.path.expanduser("~/.chadow")
+CONFIG_NAME: str = "config.json"
+CHADOW_METADATA: str = ".chadow-metadata"
+PATH_SEPARATOR_REPLACEMENT: str = "+"
 
 # Exit codes
 CONFIG_NOT_FOUND = 1
@@ -216,9 +217,6 @@ def regsector(library: str, sector_name: str):
         logging.error("config file not found. Is chadow installed properly?")
         exit(CONFIG_NOT_FOUND)
 
-def __normalize_path_separator(path: str):
-    return path.replace(os.path.sep, "+")
-
 @cli.command()
 @click.argument("library")
 @click.argument("sector_name")
@@ -226,6 +224,14 @@ def __normalize_path_separator(path: str):
 def regmedia(library: str, sector_name: str, sector_path: str):
     # TODO Make sure this is atomic.
     logging.info("asked to register media %s in sector %s." % (sector_path, sector_name))
+
+    if PATH_SEPARATOR_REPLACEMENT in sector_path:
+        logging.error(
+            "sector_path cannot have the %s character!\nGiven: %s" % (
+                PATH_SEPARATOR_REPLACEMENT, sector_path
+            )
+        )
+        exit(INVALID_ARG)
 
     try:
         config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
@@ -262,6 +268,12 @@ def regmedia(library: str, sector_name: str, sector_path: str):
         logging.error("config file not found. Is chadow installed properly?")
         exit(CONFIG_NOT_FOUND)
 
+def __normalize_path_separator(path: str):
+    return path.replace(os.path.sep, PATH_SEPARATOR_REPLACEMENT) 
+
+def __denormalize_index_dir(index_dir: str):
+    return index_dir.replace(PATH_SEPARATOR_REPLACEMENT, os.path.sep)
+
 @cli.command()
 @click.argument("library")
 @click.argument("sector_name")
@@ -279,6 +291,39 @@ def index(library: str, sector_name: str, sector_path: str):
     except PermissionError:
         logging.error("can't open config file. Are you sure we have the proper permissions for it?")
         exit(PERMISSIONS_PROBLEM)
+
+    dir_index = DirectoryIndex(sector_path, is_top_level=True)
+    subdir_traversal = [sector_path]
+    is_top_level = True
+    parents = {}
+
+    while subdir_traversal:
+        curdir = subdir_traversal.pop()
+
+        if is_top_level:
+            curindex = dir_index
+            is_top_level = False
+        else:
+            curindex = DirectoryIndex(
+                subdir=curdir.split(os.sep)[-1],
+                is_top_level=False
+            )
+
+        # Use os.walk instead of os.listdir so that full path construction is
+        # handled for free.
+        for root, dirs, files in os.walk(curdir):
+            for _file in files:
+                curindex.add_to_index(_file)
+
+            for _dir in dirs:
+                subdir_traversal.append(os.path.join(root, _dir))
+                parents[os.path.join(root, _dir)] = curindex
+
+            # one run only
+            break
+        
+        if parents.get(curdir):
+            parents[curdir].add_to_index(curindex)
 
 if __name__ == "__main__":
     cli()
