@@ -31,17 +31,20 @@ while subdir_traversal:
         curindex = dir_index
         is_top_level = False
     else:
-        curindex = DirectoryIndex(subdir=curdir, is_top_level=False)
+        curindex = DirectoryIndex(subdir=curdir.split(os.sep)[-1], is_top_level=False)
 
-    for _file in os.listdir(curdir):
-        if os.path.isdir(_file):
-            subdir_traversal.append(_file)
-            # subdirectories!
-            parents[_file] = curindex
-        else:
+    #for _file in os.listdir(curdir):
+    for root, dirs, files in os.walk(curdir):
+        for _file in files:
             curindex.add_to_index(_file)
+
+        for _dir in dirs:
+            subdir_traversal.append(os.path.join(root, _dir))
+            parents[os.path.join(root, _dir)] = curindex
+
+        # one run only
+        break
     
-    print(parents)
     if parents.get(curdir):
         parents[curdir].add_to_index(curindex)
 

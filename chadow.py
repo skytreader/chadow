@@ -68,7 +68,7 @@ class DirectoryIndex(object):
         else:
             logging.warn("Asked to index a None object!")
 
-    def to_json(self) -> str:
+    def __to_dict(self) -> dict:
         dict_rep = {}
         if self.is_top_level:
             dict_rep["version"] = self.version
@@ -76,17 +76,17 @@ class DirectoryIndex(object):
             dict_rep["subdir"] = self.subdir
         
         dict_rep["index"] = []
-        print("The index we have %s" % self.index)
 
         for item in self.index:
-            print("Checking %s" % item)
             if isinstance(item, str):
                 dict_rep["index"].append(item)
             else:
-                print("calling to_json for %s" % item)
-                dict_rep["index"].append(item.to_json())
+                dict_rep["index"].append(item.__to_dict())
 
-        return json.dumps(dict_rep)
+        return dict_rep
+
+    def to_json(self) -> str:
+        return json.dumps(self.__to_dict())
 
 @click.group()
 def cli():
