@@ -57,13 +57,16 @@ class DirectoryIndex(object):
             self.subdir == other.subdir
         ))
 
-    def __hash__(self, other: "DirectoryIndex"):
+    def __hash__(self):
         return hash((
-            self.is_top_level, self.index, self.subdir
+            self.is_top_level, tuple(self.index), self.subdir
         ))
 
-    def add_to_index(item: Union[str, "DirectoryIndex"]):
-        self.index.add(item)
+    def add_to_index(self, item: Union[str, "DirectoryIndex"]):
+        if item is not None:
+            self.index.add(item)
+        else:
+            logging.warn("Asked to index a None object!")
 
     def to_json(self) -> str:
         dict_rep = {}
@@ -73,12 +76,15 @@ class DirectoryIndex(object):
             dict_rep["subdir"] = self.subdir
         
         dict_rep["index"] = []
+        print("The index we have %s" % self.index)
 
         for item in self.index:
+            print("Checking %s" % item)
             if isinstance(item, str):
                 dict_rep["index"].append(item)
             else:
-                dict_rep["index"].append(item.to_json)
+                print("calling to_json for %s" % item)
+                dict_rep["index"].append(item.to_json())
 
         return json.dumps(dict_rep)
 
