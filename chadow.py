@@ -178,6 +178,14 @@ def deletelib(name: str):
         logging.error("config file not found. Is chadow installed properly?")
         exit(CONFIG_NOT_FOUND)
 
+def __get_sector_dirname(sector_name: str):
+    return os.path.join(APP_ROOT, sector_name)
+
+def __get_sectorpath_dirname(sector_name: str, sector_path: str):
+    return os.path.join(
+        APP_ROOT, sector_name, __normalize_path_separator(sector_path)
+    )
+
 @cli.command()
 @click.argument("library")
 @click.argument("sector_name")
@@ -198,8 +206,8 @@ def regsector(library: str, sector_name: str):
         else:
             library_sectors[sector_name] = []
             try:
-                os.mkdir(os.path.join(APP_ROOT, sector_name))
-                logging.info("Created sector index directory.")
+                os.mkdir(__get_sector_dirname(sector_name))
+                logging.info("Created sector index directory for %s." % sector_name)
             except OSError as e:
                 if e.errno == errno.EEXIST:
                     logging.info("Sector index directory already exists.")
@@ -238,7 +246,7 @@ def regmedia(library: str, sector_name: str, sector_path: str):
         config = __config_check(config_filename)
         metadata_path = os.path.join(sector_path, CHADOW_METADATA)
         if os.path.isfile(metadata_path):
-            logging.error("specified sector_path %s is already registered." % sector_path)
+            logging.error("specified path %s is already registered." % sector_path)
             exit(STATE_CONFLICT)
 
         try:
@@ -253,6 +261,10 @@ def regmedia(library: str, sector_name: str, sector_path: str):
             exit(PERMISSIONS_PROBLEM)
         
         if config["libraryMapping"][library].get("sectors"):
+            if not os.path.isdir(__get_sector_dirname(sector_name)):
+                logging.error("State conflict: missing directory for sector %s." % sector_name)
+                exit(STATE_CONFLICT)
+            os.mkdir(__get_sectorpath_dirname(sector_name, sector_path))
             config["libraryMapping"][library]["sectors"][sector_name].append(sector_path)
             __write_cfg(
                 config, config_filename,
@@ -260,7 +272,6 @@ def regmedia(library: str, sector_name: str, sector_path: str):
                     library, sector_name, sector_path
                 )
             )
-            exit(0)
         else:
             logging.error("Sector %s not found. Are you sure you have registered this sector before?" % sector_name)
             exit(STATE_CONFLICT)
