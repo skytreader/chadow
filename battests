@@ -73,6 +73,24 @@ setup() {
     [ $delete_rc -eq $STATE_CONFLICT ]
 }
 
+@test "that regsector does not accept sector names with the path separator" {
+    # Why impose this constraint again?
+    $py chadow.py createlib test1
+    set +e
+    $py chadow.py regsector test1 sector1/spam
+    invalid_name=$?
+    set -e
+    [ $invalid_name -eq $INVALID_ARG ]
+}
+
+@test "that regsector works just as expected" {
+    $py chadow.py createlib test1
+    $py chadow.py regsector test1 sector1
+    sector_paths=`jq .libraryMapping.test1.sectors.sector1 ~/.chadow/config.json | sed 's/ //g'`
+    [ "$sector_paths" == "[]" ]
+    [ -d ~/.chadow/sector1 ]
+}
+
 @test "that regmedia works as expected" {
     $py chadow.py createlib test1
     $py chadow.py regsector test1 sector1
@@ -114,24 +132,6 @@ setup() {
     error_code=$?
     set -e
     [ $error_code -eq $INVALID_ARG ]
-}
-
-@test "that regsector does not accept sector names with the path separator" {
-    # Why impose this constraint again?
-    $py chadow.py createlib test1
-    set +e
-    $py chadow.py regsector test1 sector1/spam
-    invalid_name=$?
-    set -e
-    [ $invalid_name -eq $INVALID_ARG ]
-}
-
-@test "that regsector works just as expected" {
-    $py chadow.py createlib test1
-    $py chadow.py regsector test1 sector1
-    sector_paths=`jq .libraryMapping.test1.sectors.sector1 ~/.chadow/config.json | sed 's/ //g'`
-    [ "$sector_paths" == "[]" ]
-    [ -d ~/.chadow/sector1 ]
 }
 
 @test "that index works as expected" {
