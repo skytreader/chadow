@@ -154,7 +154,11 @@ setup() {
     $py chadow.py regsector test1 sector1
     $py chadow.py regmedia test1 sector1 $EHD_1
     $py chadow.py index test1 sector1 $EHD_1
-    [ -e "$CHADOW_DIR/test1/sector1/$EHD_1_SANITIZED/index.json" ]
+    index_file="$CHADOW_DIR/test1/sector1/$EHD_1_SANITIZED/index.json"
+    [ -e $index_file ]
+    index_ver=`jq .version $index_file | sed 's/"//g'`
+    repo_ver=`head -n 1 VERSION`
+    [ "$index_ver" == "$repo_ver" ]
 }
 
 teardown() {
