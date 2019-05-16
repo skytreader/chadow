@@ -159,6 +159,14 @@ setup() {
     index_ver=`jq .version $index_file | sed 's/"//g'`
     repo_ver=`head -n 1 VERSION`
     [ "$index_ver" == "$repo_ver" ]
+
+    root_txt=`jq '.index | map(select(. == "root.txt"))' $index_file`
+    [ "$root_txt" != "[]" ]
+
+    dir1=`jq '.index[] | objects | select(.subdir == "directory1")' $index_file`
+    [ "$dir1" != "" ]
+    dne=`jq '.index[] | objects | select(.subdir == "does not exist")' $index_file`
+    [ "$dne" == "" ]
 }
 
 teardown() {
