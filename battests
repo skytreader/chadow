@@ -134,6 +134,18 @@ setup() {
     [ -d ~/.chadow/sector1 ]
 }
 
+@test "that index works as expected" {
+    # Set-up the directory to index
+    [ -d $EHD_1 ]
+    touch "$EHD_1/root.txt"
+    mkdir "$EHD_1/directory1"
+    touch "$EHD_1/directory1/dir1.txt"
+
+    # Set-up everything for chadow and index EHD1
+    $py chadow.py createlib test1
+    $py chadow.py regsector test1 sector1
+}
+
 teardown() {
     ./uninstall
     if [ -f $EHD_1/.chadow-metadata ]; then

@@ -336,5 +336,9 @@ def index(library: str, sector_name: str, sector_path: str):
         if parents.get(curdir):
             parents[curdir].add_to_index(curindex)
 
+    sector_path_dir = __get_sectorpath_dirname(sector_name, sector_path)
+    with open(os.path.join(sector_path_dir, "index.json"), "w+") as path_index:
+        path_index.write(dir_index.to_json())
+
 if __name__ == "__main__":
     cli()
