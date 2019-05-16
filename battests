@@ -155,10 +155,16 @@ setup() {
 
 teardown() {
     ./uninstall
+    rm_cmd="rm"
+
+    if [ $is_travis == 1 ]; then
+        rm_cmd="sudo rm -rf"
+    fi
+
     if [ -f $EHD_1/.chadow-metadata ]; then
-        rm $EHD_1/.chadow-metadata
+        $rm_cmd $EHD_1/.chadow-metadata
     fi
     if [ -f $EHD_2/.chadow-metadata ]; then
-        rm $EHD_2/.chadow-metadata
+        $rm_cmd $EHD_2/.chadow-metadata
     fi
 }

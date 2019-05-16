@@ -6,4 +6,5 @@ if [ $FULL_TESTING -eq 1 ]; then
     set -e
     rmvirtualenv chadow
 fi
+
 rm -r ~/.chadow
