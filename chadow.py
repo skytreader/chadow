@@ -144,6 +144,7 @@ def createlib(name: str):
         with open(config_filename, "r") as config_file:
             updated_config = __createlib(config_file)
         __write_cfg(updated_config, config_filename, "Created new lib: %s" % name)
+        os.mkdir(os.path.join(APP_ROOT, name))
     except json.decoder.JSONDecodeError:
         # Config file is malformed json. Maybe a botched install. But let's be
         # forgiving anyway and reformat the malformed config.
@@ -152,9 +153,12 @@ def createlib(name: str):
             config_file.write('{"version": "%s", "libraryMapping": {}}' % VERSION)
             config_file.flush()
 
+        # FIXME Possible race condition: After the fix, above the file might
+        # change while we haven't read it yet again for reading.
         with open(config_filename, "r") as config_file:
             updated_config = __createlib(config_file)
         __write_cfg(updated_config, config_filename, "Created new lib: %s" % name)
+        os.mkdir(os.path.join(APP_ROOT, name))
 
 @cli.command()
 @click.argument("name")
@@ -177,6 +181,14 @@ def deletelib(name: str):
     except FileNotFoundError:
         logging.error("config file not found. Is chadow installed properly?")
         exit(CONFIG_NOT_FOUND)
+    finally:
+        try:
+            os.rmdir(os.path.join(APP_ROOT, name))
+        except FileNotFoundError:
+            logging.warn(
+                "%s does not exist. Possible data loss condition!" %
+                os.path.join(APP_ROOT, name)
+            )
 
 def __get_sector_dirname(sector_name: str):
     return os.path.join(APP_ROOT, sector_name)
