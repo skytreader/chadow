@@ -7,6 +7,7 @@ if [ $FULL_TESTING -eq 1 ]; then
     py="/home/$(whoami)/.virtualenvs/chadow/bin/python"
 fi
 
+CHADOW_DIR="/home/$(whoami)/.chadow"
 EHD_1="/media/chadow/mock-fs-1"
 EHD_1_SANITIZED="+media+chadow+mock-fs-1"
 EHD_2="/media/chadow/mock-fs-2"
@@ -94,15 +95,16 @@ setup() {
     $py chadow.py regsector test1 sector1
     sector_paths=`jq .libraryMapping.test1.sectors.sector1 ~/.chadow/config.json | sed 's/ //g'`
     [ "$sector_paths" == "[]" ]
-    [ -d ~/.chadow/sector1 ]
+    echo "$CHADOW_DIR/test1/sector1"
+    [ -d "$CHADOW_DIR/test1/sector1" ]
 }
 
 @test "that regmedia works as expected" {
     $py chadow.py createlib test1
     $py chadow.py regsector test1 sector1
-    [ ! -d ~/.chadow/sector1/$EHD_1_SANITIZED ]
+    [ ! -d ~/.chadow/test1/sector1/$EHD_1_SANITIZED ]
     $py chadow.py regmedia test1 sector1 $EHD_1
-    [ -d ~/.chadow/sector1/$EHD_1_SANITIZED ]
+    [ -d ~/.chadow/test1/sector1/$EHD_1_SANITIZED ]
     metadata=`head -n1 $EHD_1/.chadow-metadata`
     [ "$metadata" == "sector1" ]
     list_contents=`jq .libraryMapping.test1.sectors.sector1 ~/.chadow/config.json | grep $EHD_1 | sed 's/"//g' | sed 's/ //g'`
@@ -151,6 +153,8 @@ setup() {
     $py chadow.py createlib test1
     $py chadow.py regsector test1 sector1
     $py chadow.py regmedia test1 sector1 $EHD_1
+    $py chadow.py index test1 sector1 $EHD_1
+    [ -e "$CHADOW_DIR/test1/sector1/$EHD_1_SANITIZED/index.json" ]
 }
 
 teardown() {

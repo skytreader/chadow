@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Set, Union
 
 import click
 import errno
@@ -42,7 +42,7 @@ class DirectoryIndex(object):
         subdir: Optional[str]=None,
         is_top_level: bool=True,
         version: str=VERSION
-    ):
+    ) -> None:
         self.version: str = version
         # FIXME: Prevent acyclic structures
         self.index: Set[Union[str, "DirectoryIndex"]] = set()
@@ -51,7 +51,7 @@ class DirectoryIndex(object):
         if not is_top_level:
             self.subdir = subdir
 
-    def __eq__(self, other: "DirectoryIndex"):
+    def __eq__(self, other):
         return all((
             self.is_top_level == other.is_top_level,
             self.index == other.index,
@@ -70,11 +70,15 @@ class DirectoryIndex(object):
             logging.warn("Asked to index a None object!")
 
     def __to_dict(self) -> dict:
-        dict_rep = {}
+        dict_rep: Dict[str, Any] = {}
         if self.is_top_level:
             dict_rep["version"] = self.version
-        else:
+        elif self.subdir is not None:
             dict_rep["subdir"] = self.subdir
+        else:
+            # This should never happen but we are tolerant about it
+            logging.warn("None passed as subdirectory name. Coercing to blank (which is still unacceptable!")
+            dict_rep["subdir"] = ""
         
         dict_rep["index"] = []
 
@@ -118,6 +122,22 @@ def __write_cfg(updated_config: Dict[str, str], config_filename: str, log_mesg: 
     
     logging.info(log_mesg)
 
+def __normalize_path_separator(path: str):
+    return path.replace(os.path.sep, PATH_SEPARATOR_REPLACEMENT) 
+
+def __denormalize_index_dir(index_dir: str):
+    return index_dir.replace(PATH_SEPARATOR_REPLACEMENT, os.path.sep)
+
+def __make_sector_dirname(library_name: str, sector_name: str):
+    return os.path.join(APP_ROOT, library_name, sector_name)
+
+def __make_sectorpath_dirname(
+    library_name: str, sector_name: str, sector_path: str
+):
+    return os.path.join(
+        APP_ROOT, library_name, sector_name, __normalize_path_separator(sector_path)
+    )
+
 @cli.command()
 @click.argument("name")
 def createlib(name: str):
@@ -141,6 +161,7 @@ def createlib(name: str):
     config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
     updated_config = None
     try:
+        logging.info("Writing config file: %s" % config_filename)
         with open(config_filename, "r") as config_file:
             updated_config = __createlib(config_file)
         __write_cfg(updated_config, config_filename, "Created new lib: %s" % name)
@@ -190,14 +211,6 @@ def deletelib(name: str):
                 os.path.join(APP_ROOT, name)
             )
 
-def __get_sector_dirname(sector_name: str):
-    return os.path.join(APP_ROOT, sector_name)
-
-def __get_sectorpath_dirname(sector_name: str, sector_path: str):
-    return os.path.join(
-        APP_ROOT, sector_name, __normalize_path_separator(sector_path)
-    )
-
 @cli.command()
 @click.argument("library")
 @click.argument("sector_name")
@@ -218,8 +231,9 @@ def regsector(library: str, sector_name: str):
         else:
             library_sectors[sector_name] = []
             try:
-                os.mkdir(__get_sector_dirname(sector_name))
-                logging.info("Created sector index directory for %s." % sector_name)
+                sector_dirname = __make_sector_dirname(library, sector_name)
+                os.mkdir(__make_sector_dirname(library, sector_dirname))
+                logging.info("Created sector index directory: %s" % sector_dirname)
             except OSError as e:
                 if e.errno == errno.EEXIST:
                     logging.info("Sector index directory already exists.")
@@ -273,10 +287,10 @@ def regmedia(library: str, sector_name: str, sector_path: str):
             exit(PERMISSIONS_PROBLEM)
         
         if config["libraryMapping"][library].get("sectors"):
-            if not os.path.isdir(__get_sector_dirname(sector_name)):
+            if not os.path.isdir(__make_sector_dirname(library, sector_name)):
                 logging.error("State conflict: missing directory for sector %s." % sector_name)
                 exit(STATE_CONFLICT)
-            os.mkdir(__get_sectorpath_dirname(sector_name, sector_path))
+            os.mkdir(__make_sectorpath_dirname(library, sector_name, sector_path))
             config["libraryMapping"][library]["sectors"][sector_name].append(sector_path)
             __write_cfg(
                 config, config_filename,
@@ -287,15 +301,10 @@ def regmedia(library: str, sector_name: str, sector_path: str):
         else:
             logging.error("Sector %s not found. Are you sure you have registered this sector before?" % sector_name)
             exit(STATE_CONFLICT)
-    except FileNotFoundError:
+    except FileNotFoundError as fnfe:
         logging.error("config file not found. Is chadow installed properly?")
+        logging.error(fnfe, exc_info=True)
         exit(CONFIG_NOT_FOUND)
-
-def __normalize_path_separator(path: str):
-    return path.replace(os.path.sep, PATH_SEPARATOR_REPLACEMENT) 
-
-def __denormalize_index_dir(index_dir: str):
-    return index_dir.replace(PATH_SEPARATOR_REPLACEMENT, os.path.sep)
 
 @cli.command()
 @click.argument("library")
@@ -348,8 +357,9 @@ def index(library: str, sector_name: str, sector_path: str):
         if parents.get(curdir):
             parents[curdir].add_to_index(curindex)
 
-    sector_path_dir = __get_sectorpath_dirname(sector_name, sector_path)
+    sector_path_dir = __make_sectorpath_dirname(library, sector_name, sector_path)
     with open(os.path.join(sector_path_dir, "index.json"), "w+") as path_index:
+        logging.info("Writing index.json to %s" % sector_path_dir)
         path_index.write(dir_index.to_json())
 
 if __name__ == "__main__":
