@@ -46,7 +46,13 @@ docker run --mount type=bind,source="$(pwd)",target=/home/chadow/chadow \
 test_result=$?
 set -e +x
 
-rm -r ~/mock-fs-1
-rm -r ~/mock-fs-2
+rm_cmd="rm -r"
+
+if [ $is_travis == 1 ]; then
+    rm_cmd="sudo rm -rf"
+fi
+
+$rm_cmd ~/mock-fs-1
+$rm_cmd ~/mock-fs-2
 
 exit $test_result
