@@ -156,12 +156,10 @@ setup() {
 teardown() {
     ./uninstall
 
-    set -x
     if [ -f $EHD_1/.chadow-metadata ]; then
-        $rm_cmd $EHD_1/.chadow-metadata
+        rm $EHD_1/.chadow-metadata
     fi
     if [ -f $EHD_2/.chadow-metadata ]; then
-        $rm_cmd $EHD_2/.chadow-metadata
+        rm $EHD_2/.chadow-metadata
     fi
-    set +x
 }
