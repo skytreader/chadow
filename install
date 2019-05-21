@@ -47,5 +47,6 @@ if [[ ! -z "FULL_TESTING" ]] || [[ $FULL_TESTING -eq 1 ]]; then
     set -x
     pip install -r requirements.txt
 fi
+set +x
 cp chadow.py ~/.chadow
 echo "Done installing. Do 'workon chadow' to start using chadow."
