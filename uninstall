@@ -1,10 +1,16 @@
 # vim: set ft=sh:
+set -e
+
+if [[ ! -z "$FULL_TESTING" ]]; then
+    set -x
+fi
 version="$(cat VERSION)"
 
-if [ $FULL_TESTING -eq 1 ]; then
+if [[ -z "$FULL_TESTING" ]] || [[ "$FULL_TESTING" -eq "1" ]]; then
     source ~/.venvburrito/bin/virtualenvwrapper.sh
     set -e
     rmvirtualenv chadow
 fi
 
 rm -r ~/.chadow
+echo "chadow removed."
