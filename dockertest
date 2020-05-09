@@ -1,5 +1,5 @@
 # vim: set ft=sh:
-set -e
+set -e -u
 
 check_dir(){
     if [ ! -d  $1 ]; then
@@ -54,5 +54,7 @@ fi
 
 $rm_cmd ~/mock-fs-1
 $rm_cmd ~/mock-fs-2
+
+set +e +u
 
 exit $test_result

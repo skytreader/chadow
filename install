@@ -3,7 +3,7 @@
 # Creates a `chadow` virtualenv and a ~/.chadow directory. The .chadow directory
 # is initialized to have a config.
 
-set -e
+set -e -u
 if [[ ! -z "FULL_TESTING" ]] || [[ $FULL_TESTING -eq 1 ]]; then
     source ~/.venvburrito/bin/virtualenvwrapper.sh
 fi
@@ -47,6 +47,6 @@ if [[ ! -z "FULL_TESTING" ]] || [[ $FULL_TESTING -eq 1 ]]; then
     set -x
     pip install -r requirements.txt
 fi
-set +x
+set +x +e +u
 cp chadow.py ~/.chadow
 echo "Done installing. Do 'workon chadow' to start using chadow."
