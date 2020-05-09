@@ -19,9 +19,12 @@ check_dir(){
 
 mode="full"
 
+# Turn off -u because we are doing its job for it.
+set +u
 if [ ! -z "$1" ]; then
     mode="$1"
 fi
+set -u
 
 if [ "$mode" != "full" ] && [ "$mode" != "quick" ]; then
     echo "mode can only be either full or quick. Given: $mode"
@@ -48,9 +51,12 @@ set -e +x
 
 rm_cmd="rm -r"
 
-if [ $is_travis == 1 ]; then
+# Turn off -u because this is a special check for a TravisCI envvar.
+set +u
+if [ "$is_travis" == "1" ]; then
     rm_cmd="sudo rm -rf"
 fi
+set -u
 
 $rm_cmd ~/mock-fs-1
 $rm_cmd ~/mock-fs-2
