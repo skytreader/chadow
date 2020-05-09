@@ -3,9 +3,13 @@
 # Creates a `chadow` virtualenv and a ~/.chadow directory. The .chadow directory
 # is initialized to have a config.
 
-set -e -u
+set -e -u -x
+echo "This is the chadow install script."
 if [[ ! -z "FULL_TESTING" ]] || [[ $FULL_TESTING -eq 1 ]]; then
+    # Turn off -u because this is not our script
+    set +e +u
     source ~/.venvburrito/bin/virtualenvwrapper.sh
+    set -e -u
 fi
 
 if [[ ! -z "$FULL_TESTING" ]]; then
@@ -33,7 +37,7 @@ if [[ ! -z "FULL_TESTING" ]] || [[ $FULL_TESTING -eq 1 ]]; then
     # Turn off error exit since, for some reason, this install script halts on
     # mkvirtualenv with exit error on.
     # Turn off verbose since virtualenv is noisy.
-    set +e +x
+    set +e +x +u
     echo "Creating chadow virtualenv..."
     mkvirtualenv chadow -p python3.7
     echo "virtualenv created."
@@ -44,7 +48,7 @@ if [[ ! -z "FULL_TESTING" ]] || [[ $FULL_TESTING -eq 1 ]]; then
     echo "Working on virtualenv..."
     workon chadow
     echo "Now on virtualenv. Turning verbose on again."
-    set -x
+    set -x -u
     pip install -r requirements.txt
 fi
 set +x +e +u

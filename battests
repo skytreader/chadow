@@ -1,4 +1,5 @@
 # vim: set ft=sh:
+set -e -u
 
 py="python"
 if [ $FULL_TESTING -eq 1 ]; then
@@ -179,3 +180,4 @@ teardown() {
         rm $EHD_2/.chadow-metadata
     fi
 }
+set +e +u

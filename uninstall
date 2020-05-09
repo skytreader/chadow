@@ -1,5 +1,6 @@
 # vim: set ft=sh:
-set -e
+set -e -u
+echo "This is the chadow uninstall script."
 
 if [[ ! -z "$FULL_TESTING" ]]; then
     set -x
@@ -7,10 +8,18 @@ fi
 version="$(cat VERSION)"
 
 if [[ -z "$FULL_TESTING" ]] || [[ "$FULL_TESTING" -eq "1" ]]; then
+    # Turn off -u because this is not our script
+    echo "try"
+    set +e +u +x
     source ~/.venvburrito/bin/virtualenvwrapper.sh
-    set -e
     rmvirtualenv chadow
+    set -e -u
 fi
 
-rm -r ~/.chadow
+if [[ ! -z "$FULL_TESTING" ]]; then
+    set -x
+fi
+
+rm -rf ~/.chadow
 echo "chadow removed."
+set +e +u
