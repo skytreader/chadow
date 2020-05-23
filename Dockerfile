@@ -20,7 +20,7 @@ RUN useradd -m -U -s /bin/bash chadow && \
     chmod 775 -R /opt/bin && \
     chown chadow:chadow /media
 USER chadow
-RUN cd ~ && wget https://raw.githubusercontent.com/brainsik/virtualenv-burrito/master/virtualenv-burrito.sh && chmod +x virtualenv-burrito.sh && ./virtualenv-burrito.sh
+RUN cd ~ && wget https://raw.githubusercontent.com/skytreader/virtualenv-burrito/master/virtualenv-burrito.sh && chmod +x virtualenv-burrito.sh && ./virtualenv-burrito.sh
 
 ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
