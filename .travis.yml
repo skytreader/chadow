@@ -5,4 +5,4 @@ services:
     - docker
 before_script:
     - docker pull skytreader/chadow
-script: "./dockertest"
+script: "python chadow_test.py"
