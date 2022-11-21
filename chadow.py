@@ -77,7 +77,7 @@ class DirectoryIndex(object):
             dict_rep["subdir"] = self.subdir
         else:
             # This should never happen but we are tolerant about it
-            logging.warn("None passed as subdirectory name. Coercing to blank (which is still unacceptable!")
+            logging.warn("None passed as subdirectory name. Coercing to blank (which is still unacceptable)!")
             dict_rep["subdir"] = ""
         
         dict_rep["index"] = []
@@ -169,14 +169,10 @@ def createlib(name: str):
     except json.decoder.JSONDecodeError:
         # Config file is malformed json. Maybe a botched install. But let's be
         # forgiving anyway and reformat the malformed config.
-        with open(config_filename, "w+") as config_file:
+        with open(config_filename, "rw+") as config_file:
             logging.warning("unreadable json in config file. Reformatting.")
             config_file.write('{"version": "%s", "libraryMapping": {}}' % VERSION)
             config_file.flush()
-
-        # FIXME Possible race condition: After the fix, above the file might
-        # change while we haven't read it yet again for reading.
-        with open(config_filename, "r") as config_file:
             updated_config = __createlib(config_file)
         __write_cfg(updated_config, config_filename, "Created new lib: %s" % name)
         os.mkdir(os.path.join(APP_ROOT, name))
