@@ -28,6 +28,7 @@ CHADOW_METADATA: str = ".chadow-metadata"
 PATH_SEPARATOR_REPLACEMENT: str = "+"
 
 # Exit codes
+INVALID_CONFIG = -1
 CONFIG_NOT_FOUND = 1
 METADATA_NOT_FOUND = 2
 STATE_CONFLICT = 3
@@ -140,9 +141,10 @@ def __make_sectorpath_dirname(
 
 @cli.command()
 @click.argument("name")
-def createlib(name: str):
-    def __createlib(cfg_file, comparator="filename"):
-        config = json.load(cfg_file)
+@click.option("--force", is_flag=True, default=False, help="Set to force recreation of a corrupted library")
+def createlib(name: str, force: bool):
+    def __createlib(cfg_contents: str, comparator="filename"):
+        config = json.loads(cfg_contents)
         __version_check(config)
         existing_libraries = config.get("libraryMapping", {})
 
@@ -161,21 +163,27 @@ def createlib(name: str):
     config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
     updated_config = None
     try:
-        logging.info("Writing config file: %s" % config_filename)
         with open(config_filename, "r") as config_file:
-            updated_config = __createlib(config_file)
+            logging.info("Writing config file: %s" % config_filename)
+            updated_config = __createlib(config_file.read())
         __write_cfg(updated_config, config_filename, "Created new lib: %s" % name)
         os.mkdir(os.path.join(APP_ROOT, name))
     except json.decoder.JSONDecodeError:
-        # Config file is malformed json. Maybe a botched install. But let's be
-        # forgiving anyway and reformat the malformed config.
-        with open(config_filename, "rw+") as config_file:
-            logging.warning("unreadable json in config file. Reformatting.")
-            config_file.write('{"version": "%s", "libraryMapping": {}}' % VERSION)
-            config_file.flush()
-            updated_config = __createlib(config_file)
-        __write_cfg(updated_config, config_filename, "Created new lib: %s" % name)
-        os.mkdir(os.path.join(APP_ROOT, name))
+        if force:
+            fresh_config = {
+                "version": "%s" % VERSION,
+                "libraryMapping": {}
+            }
+            with open(config_filename, "w") as config_file:
+                logging.warning("Forced to recreate corrupted library.")
+                config_file.write(json.dumps(fresh_config))
+                config_file.flush()
+                updated_config = __createlib(fresh_config)
+            __write_cfg(updated_config, config_filename, "Created new lib: %s" % name)
+            os.mkdir(os.path.join(APP_ROOT, name))
+        else:
+            logging.error("Corrupted config file. You can either fix it manually or call createlib with --force.")
+            exit(INVALID_CONFIG)
 
 @cli.command()
 @click.argument("name")
