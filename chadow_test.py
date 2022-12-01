@@ -55,21 +55,24 @@ class ChadowTests(unittest.TestCase):
     @unittest.mock.patch("chadow.os.mkdir")
     def test_createlib_dupename(self, mkdir_mock):
         config = copy.deepcopy(DEFAULT_CONFIG)
-        config["libraryMapping"]["testlib"] = {
-            "sectors": {},
-            "comparator": "filename"
-        }
+        config["libraryMapping"]["testlib"] = chadow.make_default_lib("filename")
         mo = unittest.mock.mock_open(read_data=json.dumps(config))
         with unittest.mock.patch("chadow.open", mo) as mopen:
             self.__verify_call(chadow.createlib, ["testlib"], ExitCodes.STATE_CONFLICT.value)
             mopen.assert_any_call(self.full_config_path, "r")
             mkdir_mock.assert_not_called()
 
-    @unittest.skip("")
-    @unittest.mock.patch("chadow.open", new_callable=unittest.mock.mock_open)
-    def test_deletelib(self, open_mock):
-        self.runner.invoke(chadow.createlib, ["testlib"])
-        self.runner.invoke(chadow.deletelib, ["testlib"])
+    @unittest.mock.patch("chadow.os.rmdir")
+    @unittest.mock.patch("chadow.json.dump")
+    def test_deletelib(self, mock_json_dump, mock_rmdir):
+        config = copy.deepcopy(DEFAULT_CONFIG)
+        config["libraryMapping"]["testlib"] = chadow.make_default_lib("filename")
+        mo = unittest.mock.mock_open(read_data=json.dumps(config))
+        with unittest.mock.patch("chadow.open", mo) as mopen:
+            self.__verify_call(chadow.deletelib, ["testlib"])
+            mock_json_dump.assert_called_with(DEFAULT_CONFIG, unittest.mock.ANY)
+            mopen.assert_any_call(self.full_config_path, "rw")
+            mock_rmdir.assert_called_once_with(os.path.join(chadow.APP_ROOT, "testlib"))
 
 if __name__ == "__main__":
     tests = unittest.TestLoader().loadTestsFromTestCase(ChadowTests)

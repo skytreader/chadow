@@ -141,6 +141,12 @@ def __make_sectorpath_dirname(
         APP_ROOT, library_name, sector_name, __normalize_path_separator(sector_path)
     )
 
+def make_default_lib(comparator: str):
+    return {
+        "sectors": {},
+        "comparator": comparator
+    }
+
 @cli.command()
 @click.argument("name")
 @click.option("--force", is_flag=True, default=False, help="Set to force recreation of a corrupted library")
@@ -154,10 +160,7 @@ def createlib(name: str, force: bool):
             logging.error("specified name is already taken. Delete name first if you really want to use this name.")
             exit(ExitCodes.STATE_CONFLICT.value)
         else:
-            existing_libraries[name] = {
-                "sectors": {},
-                "comparator": comparator
-            }
+            existing_libraries[name] = make_default_lib(comparator)
 
         config["libraryMapping"] = existing_libraries
         return config
@@ -192,15 +195,13 @@ def createlib(name: str, force: bool):
 def deletelib(name: str):
     try:
         config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
-        with open(config_filename) as config_file:
+        with open(config_filename, "rw") as config_file:
             config = json.load(config_file)
             __version_check(config)
             existing_libraries = config.get("libraryMapping", {})
 
             if name in existing_libraries:
                 del existing_libraries[name]
-                # FIXME is this still necessary?
-                config["libraryMapping"] = existing_libraries
                 __write_cfg(config, config_filename, "Deleted library: %s" % name)
             else:
                 logging.error("asked to delete a nonexistent library.")
