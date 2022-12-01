@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional, Set, Union
 
 import click
+import enum
 import errno
 import os
 import json
@@ -27,14 +28,15 @@ CONFIG_NAME: str = "config.json"
 CHADOW_METADATA: str = ".chadow-metadata"
 PATH_SEPARATOR_REPLACEMENT: str = "+"
 
-# Exit codes
-INVALID_CONFIG = -1
-CONFIG_NOT_FOUND = 1
-METADATA_NOT_FOUND = 2
-STATE_CONFLICT = 3
-INVALID_ARG = 4
-PERMISSIONS_PROBLEM = 5
-OS_ERROR = 6
+@enum.unique
+class ExitCodes(enum.Enum):
+    INVALID_CONFIG = -1
+    CONFIG_NOT_FOUND = 1
+    METADATA_NOT_FOUND = 2
+    STATE_CONFLICT = 3
+    INVALID_ARG = 4
+    PERMISSIONS_PROBLEM = 5
+    OS_ERROR = 6
 
 class DirectoryIndex(object):
 
@@ -150,7 +152,7 @@ def createlib(name: str, force: bool):
 
         if name in existing_libraries:
             logging.error("specified name is already taken. Delete name first if you really want to use this name.")
-            exit(STATE_CONFLICT)
+            exit(ExitCodes.STATE_CONFLICT.value)
         else:
             existing_libraries[name] = {
                 "sectors": {},
@@ -170,20 +172,20 @@ def createlib(name: str, force: bool):
         os.mkdir(os.path.join(APP_ROOT, name))
     except json.decoder.JSONDecodeError:
         if force:
-            fresh_config = {
+            fresh_config = json.dumps({
                 "version": "%s" % VERSION,
                 "libraryMapping": {}
-            }
+            })
             with open(config_filename, "w") as config_file:
                 logging.warning("Forced to recreate corrupted library.")
-                config_file.write(json.dumps(fresh_config))
+                config_file.write(fresh_config)
                 config_file.flush()
                 updated_config = __createlib(fresh_config)
             __write_cfg(updated_config, config_filename, "Created new lib: %s" % name)
             os.mkdir(os.path.join(APP_ROOT, name))
         else:
             logging.error("Corrupted config file. You can either fix it manually or call createlib with --force.")
-            exit(INVALID_CONFIG)
+            exit(ExitCodes.INVALID_CONFIG.value)
 
 @cli.command()
 @click.argument("name")
@@ -202,10 +204,10 @@ def deletelib(name: str):
                 __write_cfg(config, config_filename, "Deleted library: %s" % name)
             else:
                 logging.error("asked to delete a nonexistent library.")
-                exit(STATE_CONFLICT)
+                exit(ExitCodes.STATE_CONFLICT.value)
     except FileNotFoundError:
         logging.error("config file not found. Is chadow installed properly?")
-        exit(CONFIG_NOT_FOUND)
+        exit(ExitCodes.CONFIG_NOT_FOUND.value)
     finally:
         try:
             os.rmdir(os.path.join(APP_ROOT, name))
@@ -222,7 +224,7 @@ def regsector(library: str, sector_name: str):
     logging.info("Registering sector %s for library %s." % (sector_name, library))
     if os.path.sep in sector_name:
         logging.error("sector_name could not contain the path separator %s" % os.path.sep)
-        exit(INVALID_ARG)
+        exit(ExitCodes.INVALID_ARG.value)
 
     try:
         config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
@@ -231,7 +233,7 @@ def regsector(library: str, sector_name: str):
 
         if library_sectors.get(sector_name):
             logging.error("Asked to register a sector that already exists")
-            exit(STATE_CONFLICT)
+            exit(ExitCodes.STATE_CONFLICT.value)
         else:
             library_sectors[sector_name] = []
             try:
@@ -243,17 +245,17 @@ def regsector(library: str, sector_name: str):
                     logging.info("Sector index directory already exists.")
                 else:
                     logging.error("Unable to create sector index directory.")
-                    exit(OS_ERROR)
+                    exit(ExitCodes.OS_ERROR.value)
             except PermissionError:
                 logging.error("No permission to create sector index directory.")
-                exit(PERMISSIONS_PROBLEM)
+                exit(ExitCodes.PERMISSIONS_PROBLEM.value)
             __write_cfg(
                 config, config_filename,
                 "Created sector %s for library %s." % (sector_name, library)
             )
     except FileNotFoundError:
         logging.error("config file not found. Is chadow installed properly?")
-        exit(CONFIG_NOT_FOUND)
+        exit(ExitCodes.CONFIG_NOT_FOUND.value)
 
 @cli.command()
 @click.argument("library")
@@ -269,7 +271,7 @@ def regmedia(library: str, sector_name: str, sector_path: str):
                 PATH_SEPARATOR_REPLACEMENT, sector_path
             )
         )
-        exit(INVALID_ARG)
+        exit(ExitCodes.INVALID_ARG.value)
 
     try:
         config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
@@ -277,7 +279,7 @@ def regmedia(library: str, sector_name: str, sector_path: str):
         metadata_path = os.path.join(sector_path, CHADOW_METADATA)
         if os.path.isfile(metadata_path):
             logging.error("specified path %s is already registered." % sector_path)
-            exit(STATE_CONFLICT)
+            exit(ExitCodes.STATE_CONFLICT.value)
 
         try:
             with open(os.path.join(sector_path, CHADOW_METADATA), "w+") as metadata:
@@ -285,15 +287,15 @@ def regmedia(library: str, sector_name: str, sector_path: str):
                 metadata.flush()
         except FileNotFoundError:
             logging.error("metadata can't be opened. Please check the sector path provided.")
-            exit(METADATA_NOT_FOUND)
+            exit(ExitCodes.METADATA_NOT_FOUND.value)
         except PermissionError:
             logging.error("can't open metadata file. Are you sure we have the proper permissions to the path?")
-            exit(PERMISSIONS_PROBLEM)
+            exit(ExitCodes.PERMISSIONS_PROBLEM.value)
         
         if config["libraryMapping"][library].get("sectors"):
             if not os.path.isdir(__make_sector_dirname(library, sector_name)):
                 logging.error("State conflict: missing directory for sector %s." % sector_name)
-                exit(STATE_CONFLICT)
+                exit(ExitCodes.STATE_CONFLICT.value)
             os.mkdir(__make_sectorpath_dirname(library, sector_name, sector_path))
             config["libraryMapping"][library]["sectors"][sector_name].append(sector_path)
             __write_cfg(
@@ -304,11 +306,11 @@ def regmedia(library: str, sector_name: str, sector_path: str):
             )
         else:
             logging.error("Sector %s not found. Are you sure you have registered this sector before?" % sector_name)
-            exit(STATE_CONFLICT)
+            exit(ExitCodes.STATE_CONFLICT.value)
     except FileNotFoundError as fnfe:
         logging.error("config file not found. Is chadow installed properly?")
         logging.error(fnfe, exc_info=True)
-        exit(CONFIG_NOT_FOUND)
+        exit(ExitCodes.CONFIG_NOT_FOUND.value)
 
 @cli.command()
 @click.argument("library")
@@ -323,10 +325,10 @@ def index(library: str, sector_name: str, sector_path: str):
         config = __config_check(config_filename)
     except FileNotFoundError:
         logging.error("config file not found. Is chadow installed properly?")
-        exit(CONFIG_NOT_FOUND)
+        exit(ExitCodes.CONFIG_NOT_FOUND.value)
     except PermissionError:
         logging.error("can't open config file. Are you sure we have the proper permissions for it?")
-        exit(PERMISSIONS_PROBLEM)
+        exit(ExitCodes.PERMISSIONS_PROBLEM.value)
 
     dir_index = DirectoryIndex(sector_path, is_top_level=True)
     subdir_traversal = [sector_path]

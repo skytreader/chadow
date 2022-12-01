@@ -1,4 +1,5 @@
 import chadow
+import copy
 import json
 import os
 import traceback
@@ -6,6 +7,7 @@ import unittest
 import unittest.mock
 import sys
 
+from chadow import ExitCodes
 from click.testing import CliRunner
 
 DEFAULT_CONFIG = {
@@ -39,7 +41,7 @@ class ChadowTests(unittest.TestCase):
     def test_createlib_corrupted_config(self):
         mo = unittest.mock.mock_open(read_data="{")
         with unittest.mock.patch("chadow.open", mo) as mopen:
-            self.__verify_call(chadow.createlib, ["testlib"], -1)
+            self.__verify_call(chadow.createlib, ["testlib"], ExitCodes.INVALID_CONFIG.value)
             mopen.assert_any_call(self.full_config_path, "r")
 
     @unittest.mock.patch("chadow.os.mkdir")
@@ -50,9 +52,18 @@ class ChadowTests(unittest.TestCase):
         open_mock.assert_any_call(self.full_config_path, "w")
         mkdir_mock.assert_any_call(os.path.join(chadow.APP_ROOT, "testlib"))
 
-    @unittest.skip("")
-    def test_createlib_dupename(self):
-        pass
+    @unittest.mock.patch("chadow.os.mkdir")
+    def test_createlib_dupename(self, mkdir_mock):
+        config = copy.deepcopy(DEFAULT_CONFIG)
+        config["libraryMapping"]["testlib"] = {
+            "sectors": {},
+            "comparator": "filename"
+        }
+        mo = unittest.mock.mock_open(read_data=json.dumps(config))
+        with unittest.mock.patch("chadow.open", mo) as mopen:
+            self.__verify_call(chadow.createlib, ["testlib"], ExitCodes.STATE_CONFLICT.value)
+            mopen.assert_any_call(self.full_config_path, "r")
+            mkdir_mock.assert_not_called()
 
     @unittest.skip("")
     @unittest.mock.patch("chadow.open", new_callable=unittest.mock.mock_open)
