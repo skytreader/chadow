@@ -111,9 +111,13 @@ def __version_check(cfg_dict: Dict[str, str]):
     elif not version:
         logging.warning("config does not specify a version.")
 
-def __config_check(full_config_name: str):
+def __config_load(full_config_name: str):
+    """
+    Load the config from the specified filename. Also performs verification that
+    the config is valid.
+    """
     config: Dict = {}
-    with open(full_config_name) as config_file:
+    with open(full_config_name, "r") as config_file:
         config = json.load(config_file)
         __version_check(config)
 
@@ -229,7 +233,7 @@ def regsector(library: str, sector_name: str):
 
     try:
         config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
-        config = __config_check(config_filename)
+        config = __config_load(config_filename)
         library_sectors = config["libraryMapping"][library]["sectors"]
 
         if library_sectors.get(sector_name):
@@ -276,7 +280,7 @@ def regmedia(library: str, sector_name: str, sector_path: str):
 
     try:
         config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
-        config = __config_check(config_filename)
+        config = __config_load(config_filename)
         metadata_path = os.path.join(sector_path, CHADOW_METADATA)
         if os.path.isfile(metadata_path):
             logging.error("specified path %s is already registered." % sector_path)
@@ -323,7 +327,7 @@ def index(library: str, sector_name: str, sector_path: str):
 
     try:
         config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
-        config = __config_check(config_filename)
+        config = __config_load(config_filename)
     except FileNotFoundError:
         logging.error("config file not found. Is chadow installed properly?")
         exit(ExitCodes.CONFIG_NOT_FOUND.value)
