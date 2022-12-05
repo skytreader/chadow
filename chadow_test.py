@@ -102,6 +102,64 @@ class DeleteLibTests(ChadowTests):
             mopen.assert_any_call(self.full_config_path, "rw")
             mock_rmdir.assert_called_once_with(os.path.join(chadow.APP_ROOT, "testlib"))
 
+class RegSectorTests(ChadowTests):
+
+    def setUp(self):
+        super().setUp()
+        self.config = copy.deepcopy(DEFAULT_CONFIG)
+        self.config["libraryMapping"]["testlib"] = chadow.make_default_lib("filename")
+
+    @unittest.mock.patch("chadow.os.mkdir")
+    def test_regsector(self, mock_mkdir):
+        _mock_open = unittest.mock.mock_open(read_data=json.dumps(self.config))
+        with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
+            self._verify_call(chadow.regsector, ["testlib", "sector1"])
+            mock_mkdir.assert_called_once_with(chadow.make_sector_dirname("testlib", "sector1"))
+
+    @unittest.mock.patch("chadow.os.mkdir")
+    def test_regsector_illegal_char(self, mock_mkdir):
+        _mock_open = unittest.mock.mock_open(read_data=json.dumps(self.config))
+        with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
+            self._verify_call(
+                chadow.regsector,
+                [
+                    "testlib",
+                    os.path.join("sector", "1")
+                ],
+                chadow.ExitCodes.INVALID_ARG.value
+            )
+            mock_mkdir.assert_not_called()
+
+    @unittest.mock.patch("chadow.os.mkdir")
+    def test_regsector_dupename(self, mock_mkdir):
+        self.config["libraryMapping"]["testlib"]["sectors"]["sector1"] = []
+        _mock_open = unittest.mock.mock_open(read_data=json.dumps(self.config))
+        with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
+            self._verify_call(
+                chadow.regsector,
+                [
+                    "testlib",
+                    "sector1"
+                ],
+                chadow.ExitCodes.STATE_CONFLICT.value
+            )
+            mock_mkdir.assert_not_called()
+
+    @unittest.mock.patch("chadow.os.mkdir")
+    def test_regsector_existing_state_conflict(self, mock_mkdir):
+        self.config["libraryMapping"]["testlib"]["sectors"] = []
+        _mock_open = unittest.mock.mock_open(read_data=json.dumps(self.config))
+        with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
+            self._verify_call(
+                chadow.regsector,
+                [
+                    "testlib",
+                    "sector1"
+                ],
+                chadow.ExitCodes.STATE_CONFLICT.value
+            )
+            mock_mkdir.assert_not_called()
+
 if __name__ == "__main__":
     tests = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
     unittest.TextTestRunner(verbosity=2, stream=sys.stdout).run(tests)

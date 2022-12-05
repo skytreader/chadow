@@ -30,9 +30,20 @@ PATH_SEPARATOR_REPLACEMENT: str = "+"
 
 @enum.unique
 class ExitCodes(enum.Enum):
+    """
+    Invalid config means there is something structurally wrong with the config.
+    For example, it is an invalid JSON document. Or when an expected field is
+    not present.
+    """
     INVALID_CONFIG = -1
     CONFIG_NOT_FOUND = 1
     METADATA_NOT_FOUND = 2
+    """
+    State conflict means that although the config passed validation, there is
+    something _semantically_ wrong with it. For example, we are told to create
+    a key that already exists, or a user-defined key maps to an unexpected data
+    structure (list vs. dict).
+    """
     STATE_CONFLICT = 3
     INVALID_ARG = 4
     PERMISSIONS_PROBLEM = 5
@@ -135,7 +146,7 @@ def __normalize_path_separator(path: str):
 def __denormalize_index_dir(index_dir: str):
     return index_dir.replace(PATH_SEPARATOR_REPLACEMENT, os.path.sep)
 
-def __make_sector_dirname(library_name: str, sector_name: str):
+def make_sector_dirname(library_name: str, sector_name: str):
     return os.path.join(APP_ROOT, library_name, sector_name)
 
 def __make_sectorpath_dirname(
@@ -236,14 +247,17 @@ def regsector(library: str, sector_name: str):
         config = __config_load(config_filename)
         library_sectors = config["libraryMapping"][library]["sectors"]
 
-        if library_sectors.get(sector_name):
+        if library_sectors.get(sector_name) is not None:
             logging.error("Asked to register a sector that already exists")
+            if type(library_sectors[sector_name]) is not list:
+                logging.warn("Pre-existing sector might be corrupted.")
+
             exit(ExitCodes.STATE_CONFLICT.value)
         else:
             library_sectors[sector_name] = []
             try:
-                sector_dirname = __make_sector_dirname(library, sector_name)
-                os.mkdir(__make_sector_dirname(library, sector_dirname))
+                sector_dirname = make_sector_dirname(library, sector_name)
+                os.mkdir(make_sector_dirname(library, sector_dirname))
                 logging.info("Created sector index directory: %s" % sector_dirname)
             except OSError as e:
                 if e.errno == errno.EEXIST:
@@ -261,6 +275,9 @@ def regsector(library: str, sector_name: str):
     except FileNotFoundError:
         logging.error("config file not found. Is chadow installed properly?")
         exit(ExitCodes.CONFIG_NOT_FOUND.value)
+    except AttributeError:
+        logging.error("Library sectors for %s is not readable! Please reformat." % library)
+        exit(ExitCodes.STATE_CONFLICT.value)
 
 @cli.command()
 @click.argument("library")
@@ -298,7 +315,7 @@ def regmedia(library: str, sector_name: str, sector_path: str):
             exit(ExitCodes.PERMISSIONS_PROBLEM.value)
         
         if config["libraryMapping"][library].get("sectors"):
-            if not os.path.isdir(__make_sector_dirname(library, sector_name)):
+            if not os.path.isdir(make_sector_dirname(library, sector_name)):
                 logging.error("State conflict: missing directory for sector %s." % sector_name)
                 exit(ExitCodes.STATE_CONFLICT.value)
             os.mkdir(__make_sectorpath_dirname(library, sector_name, sector_path))
