@@ -41,6 +41,9 @@ compare the consistency of sectors in the library.
 
 ## Testing
 
+> **NOTE:** Testing is currently being reworked heavily. This section is
+> terribly deprecated.
+
 There are two testing modes: full testing and quick testing.
 
 Full testing incorporates a full installation and uninstallation before and
