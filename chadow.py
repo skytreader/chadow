@@ -35,19 +35,19 @@ class ExitCodes(enum.Enum):
     For example, it is an invalid JSON document. Or when an expected field is
     not present.
     """
-    INVALID_CONFIG = -1
-    CONFIG_NOT_FOUND = 1
-    METADATA_NOT_FOUND = 2
+    INVALID_CONFIG = 100
+    CONFIG_NOT_FOUND = 101
+    METADATA_NOT_FOUND = 102
     """
     State conflict means that although the config passed validation, there is
     something _semantically_ wrong with it. For example, we are told to create
     a key that already exists, or a user-defined key maps to an unexpected data
     structure (list vs. dict).
     """
-    STATE_CONFLICT = 3
-    INVALID_ARG = 4
-    PERMISSIONS_PROBLEM = 5
-    OS_ERROR = 6
+    STATE_CONFLICT = 103
+    INVALID_ARG = 104
+    PERMISSIONS_PROBLEM = 105
+    OS_ERROR = 106
 
 class DirectoryIndex(object):
 
