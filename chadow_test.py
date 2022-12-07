@@ -32,13 +32,17 @@ class ChadowTests(unittest.TestCase):
 
 class CreateLibTests(ChadowTests):
 
-    def test_createlib(self):
+    @unittest.mock.patch("chadow.json.dump")
+    def test_createlib(self, mock_json_dump):
         mo = unittest.mock.mock_open(read_data=DEFAULT_CONFIG_MOCK_VALUE)
         with unittest.mock.patch("chadow.open", mo) as mopen, unittest.mock.patch("chadow.os.mkdir") as mmkdir:
             self._verify_call(chadow.createlib, ["testlib"])
             mopen.assert_any_call(self.full_config_path, "r")
             mopen.assert_any_call(self.full_config_path, "w")
             mmkdir.assert_any_call(os.path.join(chadow.APP_ROOT, "testlib"))
+            updated_config = copy.deepcopy(DEFAULT_CONFIG)
+            updated_config["libraryMapping"]["testlib"] = chadow.make_default_lib("filename")
+            mock_json_dump.assert_called_with(updated_config, unittest.mock.ANY)
 
     def test_createlib_corrupted_config(self):
         mo = unittest.mock.mock_open(read_data="{")
@@ -109,12 +113,15 @@ class RegSectorTests(ChadowTests):
         self.config = copy.deepcopy(DEFAULT_CONFIG)
         self.config["libraryMapping"]["testlib"] = chadow.make_default_lib("filename")
 
+    @unittest.mock.patch("chadow.json.dump")
     @unittest.mock.patch("chadow.os.mkdir")
-    def test_regsector(self, mock_mkdir):
+    def test_regsector(self, mock_mkdir, mock_json_dump):
         _mock_open = unittest.mock.mock_open(read_data=json.dumps(self.config))
         with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
             self._verify_call(chadow.regsector, ["testlib", "sector1"])
             mock_mkdir.assert_called_once_with(chadow.make_sector_dirname("testlib", "sector1"))
+            self.config["libraryMapping"]["testlib"]["sectors"]["sector1"] = []
+            mock_json_dump.assert_any_call(self.config, unittest.mock.ANY)
 
     @unittest.mock.patch("chadow.os.mkdir")
     def test_regsector_illegal_char(self, mock_mkdir):
