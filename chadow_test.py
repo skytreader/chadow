@@ -167,6 +167,24 @@ class RegSectorTests(ChadowTests):
             )
             mock_mkdir.assert_not_called()
 
+class RegMediaTests(ChadowTests):
+
+    def setUp(self):
+        super().setUp()
+        self.config = copy.deepcopy(DEFAULT_CONFIG)
+        self.config["libraryMapping"]["testlib"] = chadow.make_default_lib("filename")
+        self.config["libraryMapping"]["testlib"]["sectors"]["sector1"] = []
+
+    @unittest.mock.patch("chadow.json.dump")
+    @unittest.mock.patch("chadow.os.path.isdir", read_data=True)
+    @unittest.mock.patch("chadow.os.mkdir")
+    def test_regmedia(self, mock_mkdir, mock_isdir, mock_json_dump):
+        _mock_open = unittest.mock.mock_open(read_data=json.dumps(self.config))
+        with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
+            self._verify_call(chadow.regmedia, ["testlib", "sector1", "/media/testpath"])
+            self.config["libraryMapping"]["testlib"]["sectors"]["sector1"].append("/media/testpath")
+            mock_json_dump.assert_any_call(self.config, unittest.mock.ANY)
+
 if __name__ == "__main__":
     tests = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
     unittest.TextTestRunner(verbosity=2, stream=sys.stdout).run(tests)

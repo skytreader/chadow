@@ -25,6 +25,8 @@ def get_version() -> str:
 VERSION: str = get_version()
 APP_ROOT: str = os.path.expanduser("~/.chadow")
 CONFIG_NAME: str = "config.json"
+# We add a metadata dotfile to the media path to ensure that a media path can't
+# be part of more than one sector.
 CHADOW_METADATA: str = ".chadow-metadata"
 PATH_SEPARATOR_REPLACEMENT: str = "+"
 
@@ -304,7 +306,7 @@ def regmedia(library: str, sector_name: str, sector_path: str):
             exit(ExitCodes.STATE_CONFLICT.value)
 
         try:
-            with open(os.path.join(sector_path, CHADOW_METADATA), "w+") as metadata:
+            with open(metadata_path, "w+") as metadata:
                 metadata.write(sector_name)
                 metadata.flush()
         except FileNotFoundError:
