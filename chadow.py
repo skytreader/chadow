@@ -316,7 +316,7 @@ def regmedia(library: str, sector_name: str, sector_path: str):
             logging.error("can't open metadata file. Are you sure we have the proper permissions to the path?")
             exit(ExitCodes.PERMISSIONS_PROBLEM.value)
         
-        if config["libraryMapping"][library].get("sectors"):
+        if config["libraryMapping"][library].get("sectors") is not None:
             if not os.path.isdir(make_sector_dirname(library, sector_name)):
                 logging.error("State conflict: missing directory for sector %s." % sector_name)
                 exit(ExitCodes.STATE_CONFLICT.value)

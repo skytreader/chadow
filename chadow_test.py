@@ -176,14 +176,45 @@ class RegMediaTests(ChadowTests):
         self.config["libraryMapping"]["testlib"]["sectors"]["sector1"] = []
 
     @unittest.mock.patch("chadow.json.dump")
-    @unittest.mock.patch("chadow.os.path.isdir", read_data=True)
+    @unittest.mock.patch("chadow.os.path.isdir")
     @unittest.mock.patch("chadow.os.mkdir")
     def test_regmedia(self, mock_mkdir, mock_isdir, mock_json_dump):
+        mock_isdir.return_value = True
         _mock_open = unittest.mock.mock_open(read_data=json.dumps(self.config))
         with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
             self._verify_call(chadow.regmedia, ["testlib", "sector1", "/media/testpath"])
             self.config["libraryMapping"]["testlib"]["sectors"]["sector1"].append("/media/testpath")
             mock_json_dump.assert_any_call(self.config, unittest.mock.ANY)
+            mock_isdir.assert_called_with(chadow.make_sector_dirname("testlib", "sector1"))
+            mock_open.assert_any_call("/media/testpath/.chadow-metadata", "w+")
+
+    @unittest.mock.patch("chadow.os.path.isfile")
+    @unittest.mock.patch("chadow.json.dump")
+    @unittest.mock.patch("chadow.os.path.isdir")
+    @unittest.mock.patch("chadow.os.mkdir")
+    def test_regmedia_metadata_exists(self, mock_mkdir, mock_isdir, mock_json_dump, mock_isfile):
+        mock_isfile.return_value = True
+        mock_isdir.return_value = True
+        _mock_open = unittest.mock.mock_open(read_data=json.dumps(self.config))
+        with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
+            self._verify_call(
+                chadow.regmedia,
+                ["testlib", "sector1", "/media/testpath"],
+                chadow.ExitCodes.STATE_CONFLICT.value
+            )
+
+    @unittest.mock.patch("chadow.json.dump")
+    @unittest.mock.patch("chadow.os.path.isdir")
+    @unittest.mock.patch("chadow.os.mkdir")
+    def test_regmedia_directory_dne(self, mock_mkdir, mock_isdir, mock_json_dump):
+        mock_isdir.return_value = False
+        _mock_open = unittest.mock.mock_open(read_data=json.dumps(self.config))
+        with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
+            self._verify_call(
+                chadow.regmedia,
+                ["testlib", "sector1", "/media/testpath"],
+                chadow.ExitCodes.STATE_CONFLICT.value
+            )
 
 if __name__ == "__main__":
     tests = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
