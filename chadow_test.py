@@ -216,6 +216,23 @@ class RegMediaTests(ChadowTests):
                 chadow.ExitCodes.STATE_CONFLICT.value
             )
 
+    @unittest.mock.patch("chadow.json.dump")
+    @unittest.mock.patch("chadow.os.path.isdir")
+    @unittest.mock.patch("chadow.os.mkdir")
+    def test_regmedia_reserved_char(self, mock_mkdir, mock_isdir, mock_json_dump):
+        _mock_open = unittest.mock.mock_open(read_data=json.dumps(self.config))
+        with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
+            path = chadow.PATH_SEPARATOR_REPLACEMENT.join(("/media/test", "path"))
+            self._verify_call(
+                chadow.regmedia,
+                ["testlib", "sector1", path],
+                chadow.ExitCodes.INVALID_ARG.value
+            )
+            mock_mkdir.assert_not_called()
+            mock_isdir.assert_not_called()
+            mock_json_dump.assert_not_called()
+            mock_open.assert_not_called()
+
 if __name__ == "__main__":
     tests = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
     unittest.TextTestRunner(verbosity=2, stream=sys.stdout).run(tests)
