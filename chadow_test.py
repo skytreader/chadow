@@ -233,6 +233,50 @@ class RegMediaTests(ChadowTests):
             mock_json_dump.assert_not_called()
             mock_open.assert_not_called()
 
+class IndexTests(ChadowTests):
+
+    def setUp(self):
+        self.mock_directory_structure = iter([
+            (
+                "photos",
+                [
+                    "summer",
+                    "winter"
+                ],
+                [
+                    "photo1.jpg",
+                    "photo2.JPG"
+                ]
+            ),
+            (
+                os.path.join("photos", "summer"),
+                [
+                    "vacation"
+                ],
+                [
+                    "flowers.jpg",
+                    "invitation.png"
+                ]
+            ),
+            (
+                os.path.join("photos", "summer", "vacation"),
+                [],
+                [
+                    "party.jpg",
+                    "fireflies.RAW",
+                    "food.jpg"
+                ]
+            ),
+            (
+                os.path.join("photos", "winter"),
+                [],
+                [
+                    "christmas.jpg",
+                    "snow.jpg"
+                ]
+            )
+        ])
+
 if __name__ == "__main__":
     tests = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
     unittest.TextTestRunner(verbosity=2, stream=sys.stdout).run(tests)
