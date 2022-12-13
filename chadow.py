@@ -354,6 +354,20 @@ def index(library: str, sector_name: str, sector_path: str):
         logging.error("can't open config file. Are you sure we have the proper permissions for it?")
         exit(ExitCodes.PERMISSIONS_PROBLEM.value)
 
+    # This is a pre-emptive check. Technically, nothing stops us from creating
+    # an index even if it is not registered in the config. However, this would
+    # singify a state discrepancy---the directory to save the index in probably
+    # does not exist! We could still reach this conclusion later but checking
+    # here saves us an expensive operation.
+    try:
+        sector = config["libraryMapping"][library]["sectors"][sector_name]
+        if sector_path not in sector:
+            logging.error("%s is not a registered media in this sector." % sector_path)
+            exit(ExitCodes.STATE_CONFLICT.value)
+    except KeyError:
+        logging.error("Config invalid for given arguments.")
+        exit(ExitCodes.INVALID_CONFIG.value)
+
     dir_index = DirectoryIndex(sector_path, is_top_level=True)
     subdir_traversal = [sector_path]
     is_top_level = True

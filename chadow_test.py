@@ -236,6 +236,10 @@ class RegMediaTests(ChadowTests):
 class IndexTests(ChadowTests):
 
     def setUp(self):
+        super().setUp()
+        self.config = copy.deepcopy(DEFAULT_CONFIG)
+        self.config["libraryMapping"]["testlib"] = chadow.make_default_lib("filename")
+        self.config["libraryMapping"]["testlib"]["sectors"]["sector1"] = ["/media/ehd"]
         self.mock_directory_structure = iter([
             (
                 "photos",
@@ -276,6 +280,15 @@ class IndexTests(ChadowTests):
                 ]
             )
         ])
+
+    @unittest.mock.patch("chadow.os.walk")
+    def test_index(self, mock_os_walk):
+        _mock_open = unittest.mock.mock_open(read_data=json.dumps(self.config))
+        with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
+            self._verify_call(
+                chadow.index,
+                ["testlib", "sector1", "/media/ehd"]
+            )
 
 if __name__ == "__main__":
     tests = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
