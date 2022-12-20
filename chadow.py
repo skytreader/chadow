@@ -51,35 +51,38 @@ class ExitCodes(enum.Enum):
     PERMISSIONS_PROBLEM = 105
     OS_ERROR = 106
 
+IndexItem = Union[str, "DirectoryIndex"]
+
 class DirectoryIndex(object):
 
     def __init__(
         self,
-        subdir: Optional[str]=None,
+        subdir_path: Optional[str]=None,
         is_top_level: bool=True,
         version: str=VERSION
     ) -> None:
-        self.version: str = version
+        self.version: Optional[str] = None
         # FIXME: Prevent acyclic structures
-        self.index: Set[Union[str, "DirectoryIndex"]] = set()
+        self.index: Set[IndexItem] = set()
         self.is_top_level = is_top_level
-        self.subdir: Optional[str] = None
+        self.subdir_path: Optional[str] = None
         if not is_top_level:
-            self.subdir = subdir
+            self.subdir_path = subdir_path
+            self.version = version
 
     def __eq__(self, other):
         return all((
             self.is_top_level == other.is_top_level,
             self.index == other.index,
-            self.subdir == other.subdir
+            self.subdir_path == other.subdir_path
         ))
 
     def __hash__(self):
         return hash((
-            self.is_top_level, tuple(self.index), self.subdir
+            self.is_top_level, tuple(self.index), self.subdir_path
         ))
 
-    def add_to_index(self, item: Union[str, "DirectoryIndex"]):
+    def add_to_index(self, item: IndexItem):
         if item is not None:
             self.index.add(item)
         else:
@@ -89,12 +92,12 @@ class DirectoryIndex(object):
         dict_rep: Dict[str, Any] = {}
         if self.is_top_level:
             dict_rep["version"] = self.version
-        elif self.subdir is not None:
-            dict_rep["subdir"] = self.subdir
+        elif self.subdir_path is not None:
+            dict_rep["subdir_path"] = self.subdir_path
         else:
             # This should never happen but we are tolerant about it
             logging.warn("None passed as subdirectory name. Coercing to blank (which is still unacceptable)!")
-            dict_rep["subdir"] = ""
+            dict_rep["subdir_path"] = ""
         
         dict_rep["index"] = []
 
@@ -108,6 +111,22 @@ class DirectoryIndex(object):
 
     def to_json(self) -> str:
         return json.dumps(self.__to_dict())
+    
+    @staticmethod
+    def construct_from_dict(d: Dict, dirpath: Optional[str]=None) -> "DirectoryIndex":
+        index = DirectoryIndex(
+            version=d["version"],
+            subdir_path=d.get("subdir_path") or dirpath,
+            is_top_level=True
+        )
+
+        for item in d["index"]:
+            if isinstance(item, str):
+                index.add_to_index(item)
+            else:
+                index.add_to_index(DirectoryIndex.construct_from_dict(item))
+
+        return index
 
 @click.group()
 def cli():
@@ -340,7 +359,8 @@ def regmedia(library: str, sector_name: str, sector_path: str):
 @click.argument("library")
 @click.argument("sector_name")
 @click.argument("sector_path")
-def index(library: str, sector_name: str, sector_path: str):
+@click.option("--verbose", is_flag=True, default=False, help="verbose will output the index written as a text stream")
+def index(library: str, sector_name: str, sector_path: str, verbose: bool=False):
     logging.info("Indexing %s.%s.%s..." % (library, sector_name, sector_path))
     config: Dict = {}
 
@@ -381,7 +401,7 @@ def index(library: str, sector_name: str, sector_path: str):
             is_top_level = False
         else:
             curindex = DirectoryIndex(
-                subdir=curdir.split(os.sep)[-1],
+                subdir_path=curdir.split(os.sep)[-1],
                 is_top_level=False
             )
 
@@ -405,6 +425,9 @@ def index(library: str, sector_name: str, sector_path: str):
     with open(os.path.join(sector_path_dir, "index.json"), "w+") as path_index:
         logging.info("Writing index.json to %s" % sector_path_dir)
         path_index.write(dir_index.to_json())
+
+    if verbose:
+        print(str(dir_index.to_json()))
 
 if __name__ == "__main__":
     cli()

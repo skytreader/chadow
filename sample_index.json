@@ -2,7 +2,7 @@
     "version": "0.1.0",
     "index": [
         {
-            "subdir": "Spam",
+            "subdir_path": "Spam",
             "index": [
                 "Meatloaf"
             ]
@@ -12,10 +12,10 @@
         "Google",
         "Sun Microsystems",
         {
-            "subdir": "Eggs",
+            "subdir_path": "Eggs",
             "index": [
                 {
-                    "subdir": "Prehistoric",
+                    "subdir_path": "Prehistoric",
                     "index": [
                         "Dinosaur",
                         "Dodo"

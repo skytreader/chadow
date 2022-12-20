@@ -1,3 +1,4 @@
+import argparse
 import chadow
 import copy
 import json
@@ -29,6 +30,8 @@ class ChadowTests(unittest.TestCase):
         if result.exception is not None:
             traceback.print_exception(*result.exc_info)
         self.assertEqual(result.exit_code, expected_return)
+
+        return result.output
 
 class CreateLibTests(ChadowTests):
 
@@ -281,14 +284,48 @@ class IndexTests(ChadowTests):
             )
         ])
 
+    def __construct_expected_index(self):
+        index = chadow.DirectoryIndex(
+            self.config["libraryMapping"]["testlib"]["sectors"]["sector1"][0],
+            is_top_level=True
+        )
+        for _file in ["photo1.jpg", "photo2.JPG"]:
+            index.add_to_index(_file)
+
+        summer_index = chadow.DirectoryIndex(os.path.join("photos", "summer"))
+        for _file in ["flowers.jpg", "invitation.png"]:
+            summer_index.add_to_index(_file)
+
+        summer_vacation_index = chadow.DirectoryIndex(
+            os.path.join("photos", "summer", "vacation")
+        )
+        for _file in ["party.jpg", "fireflies.RAW", "food.jpg"]:
+            summer_vacation_index.add_to_index(_file)
+
+        summer_index.add_to_index(summer_vacation_index)
+        index.add_to_index(summer_index)
+
+        winter_index = chadow.DirectoryIndex(os.path.join("photos", "winter"))
+        for _file in ["christmas.jpg", "snow.jpg"]:
+            winter_index.add_to_index(_file)
+        index.add_to_index(winter_index)
+
+        return index
+
     @unittest.mock.patch("chadow.os.walk")
     def test_index(self, mock_os_walk):
         _mock_open = unittest.mock.mock_open(read_data=json.dumps(self.config))
         with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
-            self._verify_call(
+            output = self._verify_call(
                 chadow.index,
-                ["testlib", "sector1", "/media/ehd"]
+                ["testlib", "sector1", "/media/ehd", "--verbose"]
             )
+            created_index = chadow.DirectoryIndex.construct_from_dict(
+                json.loads(output)
+            )
+            print(self.__construct_expected_index().to_json())
+            print(created_index.to_json())
+            self.assertEqual(self.__construct_expected_index(), created_index)
             mock_os_walk.assert_called()
     
     @unittest.mock.patch("chadow.os.walk")
@@ -315,5 +352,21 @@ class IndexTests(ChadowTests):
             mock_os_walk.assert_not_called()
 
 if __name__ == "__main__":
-    tests = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
+    parser = argparse.ArgumentParser(
+        prog="chadow test suite",
+        description="tests for the chadow back-up system"
+    )
+    parser.add_argument("-s", "--suite", required=False, type=str)
+    args = vars(parser.parse_args())
+    has_no_suite = args.get("suite") is None
+    tests_to_run = (
+        sys.modules[__name__]
+        if has_no_suite else
+        getattr(sys.modules[__name__], args["suite"])
+    )
+    tests = (
+        unittest.TestLoader().loadTestsFromModule(tests_to_run)
+        if has_no_suite else
+        unittest.TestLoader().loadTestsFromTestCase(tests_to_run)
+    )
     unittest.TextTestRunner(verbosity=2, stream=sys.stdout).run(tests)
