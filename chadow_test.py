@@ -242,10 +242,11 @@ class IndexTests(ChadowTests):
         super().setUp()
         self.config = copy.deepcopy(DEFAULT_CONFIG)
         self.config["libraryMapping"]["testlib"] = chadow.make_default_lib("filename")
-        self.config["libraryMapping"]["testlib"]["sectors"]["sector1"] = ["/media/ehd"]
+        self.sector_path = os.path.join("media", "ehd", "photos")
+        self.config["libraryMapping"]["testlib"]["sectors"]["sector1"] = [self.sector_path]
         self.mock_directory_structure = iter([
             (
-                "photos",
+                self.sector_path,
                 [
                     "summer",
                     "winter"
@@ -256,7 +257,7 @@ class IndexTests(ChadowTests):
                 ]
             ),
             (
-                os.path.join("photos", "summer"),
+                os.path.join(self.sector_path, "summer"),
                 [
                     "vacation"
                 ],
@@ -266,7 +267,7 @@ class IndexTests(ChadowTests):
                 ]
             ),
             (
-                os.path.join("photos", "summer", "vacation"),
+                os.path.join(self.sector_path, "summer", "vacation"),
                 [],
                 [
                     "party.jpg",
@@ -275,7 +276,7 @@ class IndexTests(ChadowTests):
                 ]
             ),
             (
-                os.path.join("photos", "winter"),
+                os.path.join(self.sector_path, "winter"),
                 [],
                 [
                     "christmas.jpg",
@@ -285,19 +286,17 @@ class IndexTests(ChadowTests):
         ])
 
     def __construct_expected_index(self):
-        index = chadow.DirectoryIndex(
-            self.config["libraryMapping"]["testlib"]["sectors"]["sector1"][0],
-            is_top_level=True
-        )
+        index = chadow.DirectoryIndex(self.sector_path, is_top_level=True)
         for _file in ["photo1.jpg", "photo2.JPG"]:
             index.add_to_index(_file)
 
-        summer_index = chadow.DirectoryIndex(os.path.join("photos", "summer"))
+        summer_index = chadow.DirectoryIndex("summer", is_top_level=False)
         for _file in ["flowers.jpg", "invitation.png"]:
             summer_index.add_to_index(_file)
 
         summer_vacation_index = chadow.DirectoryIndex(
-            os.path.join("photos", "summer", "vacation")
+            "vacation",
+            is_top_level=False
         )
         for _file in ["party.jpg", "fireflies.RAW", "food.jpg"]:
             summer_vacation_index.add_to_index(_file)
@@ -305,7 +304,7 @@ class IndexTests(ChadowTests):
         summer_index.add_to_index(summer_vacation_index)
         index.add_to_index(summer_index)
 
-        winter_index = chadow.DirectoryIndex(os.path.join("photos", "winter"))
+        winter_index = chadow.DirectoryIndex("winter", is_top_level=False)
         for _file in ["christmas.jpg", "snow.jpg"]:
             winter_index.add_to_index(_file)
         index.add_to_index(winter_index)
@@ -315,16 +314,15 @@ class IndexTests(ChadowTests):
     @unittest.mock.patch("chadow.os.walk")
     def test_index(self, mock_os_walk):
         _mock_open = unittest.mock.mock_open(read_data=json.dumps(self.config))
+        mock_os_walk.return_value = self.mock_directory_structure
         with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
             output = self._verify_call(
                 chadow.index,
-                ["testlib", "sector1", "/media/ehd", "--verbose"]
+                ["testlib", "sector1", self.sector_path, "--verbose"]
             )
             created_index = chadow.DirectoryIndex.construct_from_dict(
                 json.loads(output)
             )
-            print(self.__construct_expected_index().to_json())
-            print(created_index.to_json())
             self.assertEqual(self.__construct_expected_index(), created_index)
             mock_os_walk.assert_called()
     
@@ -335,7 +333,7 @@ class IndexTests(ChadowTests):
         with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
             self._verify_call(
                 chadow.index,
-                ["testlib", "sector1", "/media/ehd"],
+                ["testlib", "sector1", self.sector_path],
                 chadow.ExitCodes.STATE_CONFLICT.value
             )
             mock_os_walk.assert_not_called()
@@ -346,7 +344,7 @@ class IndexTests(ChadowTests):
         with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
             self._verify_call(
                 chadow.index,
-                ["testlib", "sector1", "/media/ehd"],
+                ["testlib", "sector1", self.sector_path],
                 chadow.ExitCodes.INVALID_CONFIG.value
             )
             mock_os_walk.assert_not_called()

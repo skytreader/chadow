@@ -61,19 +61,18 @@ class DirectoryIndex(object):
         is_top_level: bool=True,
         version: str=VERSION
     ) -> None:
-        self.version: Optional[str] = None
+        self.version: Optional[str] = version if is_top_level else None
         # FIXME: Prevent acyclic structures
         self.index: Set[IndexItem] = set()
         self.is_top_level = is_top_level
         self.subdir_path: Optional[str] = None
         if not is_top_level:
             self.subdir_path = subdir_path
-            self.version = version
 
     def __eq__(self, other):
         return all((
             self.is_top_level == other.is_top_level,
-            self.index == other.index,
+            set(self.index) == set(other.index),
             self.subdir_path == other.subdir_path
         ))
 
@@ -115,9 +114,9 @@ class DirectoryIndex(object):
     @staticmethod
     def construct_from_dict(d: Dict, dirpath: Optional[str]=None) -> "DirectoryIndex":
         index = DirectoryIndex(
-            version=d["version"],
+            version=d.get("version"),
             subdir_path=d.get("subdir_path") or dirpath,
-            is_top_level=True
+            is_top_level=d.get("version") is not None
         )
 
         for item in d["index"]:
@@ -388,38 +387,27 @@ def index(library: str, sector_name: str, sector_path: str, verbose: bool=False)
         logging.error("Config invalid for given arguments.")
         exit(ExitCodes.INVALID_CONFIG.value)
 
-    dir_index = DirectoryIndex(sector_path, is_top_level=True)
-    subdir_traversal = [sector_path]
-    is_top_level = True
+    root_index = DirectoryIndex(sector_path, is_top_level=True)
     parents = {}
+    # Use os.walk instead of os.listdir so that full path construction is
+    # handled for free.
+    for root, dirs, files in os.walk(sector_path):
+        logging.info("checking %s %s %s" % (root, dirs, files))
+        dir_index = (
+            root_index
+            if root == sector_path else
+            DirectoryIndex(root.split(os.sep)[-1], is_top_level=False)
+        )
 
-    while subdir_traversal:
-        curdir = subdir_traversal.pop()
+        for _file in files:
+            dir_index.add_to_index(_file)
 
-        if is_top_level:
-            curindex = dir_index
-            is_top_level = False
-        else:
-            curindex = DirectoryIndex(
-                subdir_path=curdir.split(os.sep)[-1],
-                is_top_level=False
-            )
-
-        # Use os.walk instead of os.listdir so that full path construction is
-        # handled for free.
-        for root, dirs, files in os.walk(curdir):
-            for _file in files:
-                curindex.add_to_index(_file)
-
-            for _dir in dirs:
-                subdir_traversal.append(os.path.join(root, _dir))
-                parents[os.path.join(root, _dir)] = curindex
-
-            # one run only
-            break
+        for _dir in dirs:
+            this_path = os.path.join(root, _dir)
+            parents[this_path] = dir_index
         
-        if parents.get(curdir):
-            parents[curdir].add_to_index(curindex)
+        if parents.get(root):
+            parents[root].add_to_index(dir_index)
 
     sector_path_dir = __make_sectorpath_dirname(library, sector_name, sector_path)
     with open(os.path.join(sector_path_dir, "index.json"), "w+") as path_index:
@@ -427,7 +415,7 @@ def index(library: str, sector_name: str, sector_path: str, verbose: bool=False)
         path_index.write(dir_index.to_json())
 
     if verbose:
-        print(str(dir_index.to_json()))
+        print(str(root_index.to_json()))
 
 if __name__ == "__main__":
     cli()
