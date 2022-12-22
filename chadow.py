@@ -72,13 +72,21 @@ class DirectoryIndex(object):
     def __eq__(self, other):
         return all((
             self.is_top_level == other.is_top_level,
-            set(self.index) == set(other.index),
+            self.index == other.index,
             self.subdir_path == other.subdir_path
         ))
 
     def __hash__(self):
+        def index_key(i1: IndexItem):
+            if isinstance(i1, DirectoryIndex):
+                if i1.is_top_level:
+                    raise Exception("Can't sort a top-level index.")
+                return "Z-%s" % i1.subdir_path
+
+            return i1
+
         return hash((
-            self.is_top_level, tuple(self.index), self.subdir_path
+            self.is_top_level, tuple(sorted(self.index, key=index_key)), self.subdir_path
         ))
 
     def add_to_index(self, item: IndexItem):
@@ -412,7 +420,7 @@ def index(library: str, sector_name: str, sector_path: str, verbose: bool=False)
     sector_path_dir = __make_sectorpath_dirname(library, sector_name, sector_path)
     with open(os.path.join(sector_path_dir, "index.json"), "w+") as path_index:
         logging.info("Writing index.json to %s" % sector_path_dir)
-        path_index.write(dir_index.to_json())
+        path_index.write(root_index.to_json())
 
     if verbose:
         print(str(root_index.to_json()))

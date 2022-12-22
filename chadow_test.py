@@ -7,8 +7,9 @@ import traceback
 import unittest
 import unittest.mock
 import sys
+import string
 
-from chadow import ExitCodes
+from chadow import DirectoryIndex, ExitCodes
 from click.testing import CliRunner
 
 DEFAULT_CONFIG = {
@@ -17,6 +18,21 @@ DEFAULT_CONFIG = {
 }
 
 DEFAULT_CONFIG_MOCK_VALUE = json.dumps(DEFAULT_CONFIG, indent=2)
+
+class DirectoryIndexTests(unittest.TestCase):
+
+    def test_hash_and_equality(self):
+        index1 = DirectoryIndex("test")
+        index2 = DirectoryIndex("test")
+
+        for letter in string.ascii_lowercase:
+            index1.add_to_index(letter)
+
+        for letter in string.ascii_lowercase[::-1]:
+            index2.add_to_index(letter)
+
+        self.assertEqual(index1, index2)
+        self.assertEqual(hash(index1), hash(index2))
 
 class ChadowTests(unittest.TestCase):
 
@@ -89,7 +105,7 @@ class DeleteLibTests(ChadowTests):
     @unittest.mock.patch("chadow.json.dump")
     @unittest.mock.patch("chadow.open", new_callable=unittest.mock.mock_open, read_data=DEFAULT_CONFIG_MOCK_VALUE)
     def test_deletelib_nonexistent_lib(self, open_mock, mock_json_dump, mock_rmdir):
-        self._verify_call(chadow.deletelib, ["testlib"], chadow.ExitCodes.STATE_CONFLICT.value)
+        self._verify_call(chadow.deletelib, ["testlib"], ExitCodes.STATE_CONFLICT.value)
         mock_json_dump.assert_not_called()
         open_mock.assert_any_call(self.full_config_path, "rw")
         mock_rmdir.assert_called_once_with(os.path.join(chadow.APP_ROOT, "testlib"))
@@ -136,7 +152,7 @@ class RegSectorTests(ChadowTests):
                     "testlib",
                     os.path.join("sector", "1")
                 ],
-                chadow.ExitCodes.INVALID_ARG.value
+                ExitCodes.INVALID_ARG.value
             )
             mock_mkdir.assert_not_called()
 
@@ -151,7 +167,7 @@ class RegSectorTests(ChadowTests):
                     "testlib",
                     "sector1"
                 ],
-                chadow.ExitCodes.STATE_CONFLICT.value
+                ExitCodes.STATE_CONFLICT.value
             )
             mock_mkdir.assert_not_called()
 
@@ -166,7 +182,7 @@ class RegSectorTests(ChadowTests):
                     "testlib",
                     "sector1"
                 ],
-                chadow.ExitCodes.STATE_CONFLICT.value
+                ExitCodes.STATE_CONFLICT.value
             )
             mock_mkdir.assert_not_called()
 
@@ -203,7 +219,7 @@ class RegMediaTests(ChadowTests):
             self._verify_call(
                 chadow.regmedia,
                 ["testlib", "sector1", "/media/testpath"],
-                chadow.ExitCodes.STATE_CONFLICT.value
+                ExitCodes.STATE_CONFLICT.value
             )
 
     @unittest.mock.patch("chadow.json.dump")
@@ -216,7 +232,7 @@ class RegMediaTests(ChadowTests):
             self._verify_call(
                 chadow.regmedia,
                 ["testlib", "sector1", "/media/testpath"],
-                chadow.ExitCodes.STATE_CONFLICT.value
+                ExitCodes.STATE_CONFLICT.value
             )
 
     @unittest.mock.patch("chadow.json.dump")
@@ -229,7 +245,7 @@ class RegMediaTests(ChadowTests):
             self._verify_call(
                 chadow.regmedia,
                 ["testlib", "sector1", path],
-                chadow.ExitCodes.INVALID_ARG.value
+                ExitCodes.INVALID_ARG.value
             )
             mock_mkdir.assert_not_called()
             mock_isdir.assert_not_called()
@@ -323,6 +339,8 @@ class IndexTests(ChadowTests):
             created_index = chadow.DirectoryIndex.construct_from_dict(
                 json.loads(output)
             )
+            print(created_index.to_json())
+            print(self.__construct_expected_index().to_json())
             self.assertEqual(self.__construct_expected_index(), created_index)
             mock_os_walk.assert_called()
     
@@ -334,7 +352,7 @@ class IndexTests(ChadowTests):
             self._verify_call(
                 chadow.index,
                 ["testlib", "sector1", self.sector_path],
-                chadow.ExitCodes.STATE_CONFLICT.value
+                ExitCodes.STATE_CONFLICT.value
             )
             mock_os_walk.assert_not_called()
     
@@ -345,7 +363,7 @@ class IndexTests(ChadowTests):
             self._verify_call(
                 chadow.index,
                 ["testlib", "sector1", self.sector_path],
-                chadow.ExitCodes.INVALID_CONFIG.value
+                ExitCodes.INVALID_CONFIG.value
             )
             mock_os_walk.assert_not_called()
 
