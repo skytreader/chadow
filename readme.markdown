@@ -5,7 +5,8 @@ Idea:
 - Each **library** is a collection of data---text, video, images, etc. There is
 a canonical set of this data.
 - Each **sector** in a library replicates the _whole_ data set.
-- A sector is divided across different storage **media**.
+- A sector is divided across different storage **media**. The union of all the
+contents in each storage medium should be similar across sectors.
 
 chadow helps to ensure this consistency.
 
@@ -45,34 +46,8 @@ compare the consistency of sectors in the library.
 
 ## Testing
 
-> **NOTE:** Testing is currently being reworked heavily. This section is
-> terribly deprecated.
+Having installed `requirements.txt`, you can test by simply running the
+`chadow_test.py` file in this repo.
 
-There are two testing modes: full testing and quick testing.
-
-Full testing incorporates a full installation and uninstallation before and
-after each test case. In this sense, we are sure that the commands work as
-expected from a clean install. However, installation means recreating the
-virtualenv on which chadow is supposed to run.
-
-Quick testing, on the other hand, will not recreate the virtualenv everytime. In
-fact, quick testing will not rely on a virtualenv anytime; the Docker image used
-to do quick testing has the Python dependencies specified "natively".
-
-This allows for a faster feedback loop during development (just run quick tests)
-but the changes are still tested thoroughly by CI, which _always_ runs full
-testing.
-
-Every effort is done to keep the two testing environments similar. The only
-notable difference is that the Docker image for full testing inherits from
-Ubuntu (the target platform of chadow) while quick testing inherits from Debian/
-
-### Running quick tests
-
-Just build the Docker image locally,
-
-    docker build -t chadow:quicktest -f Dockerfile-quicktest .
-
-Then invoke
-
-    ./dockertest quick
+The test script also features some convenience params which you can view by
+running `python chadow_test.py -h`.

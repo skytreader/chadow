@@ -372,7 +372,10 @@ if __name__ == "__main__":
         prog="chadow test suite",
         description="tests for the chadow back-up system"
     )
-    parser.add_argument("-s", "--suite", required=False, type=str)
+    parser.add_argument(
+        "-s", "--suite", required=False, type=str,
+        help="Pass the name of a test suite class to run those tests exclusively."
+    )
     args = vars(parser.parse_args())
     has_no_suite = args.get("suite") is None
     tests_to_run = (
