@@ -1,9 +1,13 @@
 # chadow
 
-Scenario: A very large library of data (like, say, a big bunch of photos) is
-backed-up redundantly across _n_ storage sectors. Each storage sector in turn
-maybe comprised of _m_ different storage media. Now, you want to ensure that
-the file back-ups are consistent and complete across your storage sectors.
+Idea:
+
+- Each **library** is a collection of data---text, video, images, etc. There is
+a canonical set of this data.
+- Each **sector** in a library replicates the _whole_ data set.
+- A sector is divided across different storage **media**.
+
+chadow helps to ensure this consistency.
 
 Explicitly built for Linux (Ubuntu) for the meantime.
 
