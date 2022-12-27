@@ -400,7 +400,6 @@ def index(library: str, sector_name: str, sector_path: str, verbose: bool=False)
     # Use os.walk instead of os.listdir so that full path construction is
     # handled for free.
     for root, dirs, files in os.walk(sector_path):
-        logging.info("checking %s %s %s" % (root, dirs, files))
         dir_index = (
             root_index
             if root == sector_path else
