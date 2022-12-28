@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 import click
 import enum
@@ -51,6 +51,27 @@ class ExitCodes(enum.Enum):
     PERMISSIONS_PROBLEM = 105
     OS_ERROR = 106
 
+# Lists things that are NOT in this sector but are in other sectors.
+SectorDiffBin = List[
+    # 0 - the sector where this item can be found
+    # 1 - the actual item identifier
+    Tuple[str, str]
+]
+SectorDiffMapping = Dict[str, SectorDiffBin]
+
+class SectorComparisonReport(object):
+
+    def __init__(
+        self,
+        largest_sector: Optional[Tuple[str, int]],
+        smallest_sector: Optional[Tuple[str, int]],
+        # dict key is the name of the sector the diff bin is describing
+        diff_bins: Optional[SectorDiffMapping]
+    ):
+        self.largest_sector = largest_sector
+        self.smallest_sector = smallest_sector
+        self.diff_bins = diff_bins
+
 IndexItem = Union[str, "DirectoryIndex"]
 
 class DirectoryIndex(object):
@@ -59,7 +80,7 @@ class DirectoryIndex(object):
         self,
         subdir_path: Optional[str]=None,
         is_top_level: bool=True,
-        version: str=VERSION
+        version: Optional[str]=VERSION
     ) -> None:
         self.version: Optional[str] = version if is_top_level else None
         # FIXME: Prevent acyclic structures
@@ -134,6 +155,26 @@ class DirectoryIndex(object):
                 index.add_to_index(DirectoryIndex.construct_from_dict(item))
 
         return index
+
+def make_filename_diffbins(sector_sets: Dict[str, Set[str]]) -> SectorDiffMapping:
+    """
+    This is the filename comparator.
+    """
+    mapping: SectorDiffMapping = {sector:[] for sector in sector_sets}
+    for sector in sector_sets:
+        sector_names = set(sector_sets.keys())
+        sector_names.remove(sector)
+        for other_sector in sector_names:
+            only_in_sector = sector_sets[sector].difference(sector_sets[other_sector])
+            only_in_other_sector = sector_sets[other_sector].difference(sector_sets[sector])
+
+            for item in only_in_sector:
+                mapping[other_sector].append((sector, item))
+
+            for item in only_in_other_sector:
+                mapping[sector].append((other_sector, item))
+
+    return mapping
 
 @click.group()
 def cli():
