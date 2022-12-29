@@ -1,4 +1,5 @@
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing_extensions import TypedDict
 
 import click
 import enum
@@ -180,7 +181,22 @@ def make_filename_diffbins(sector_sets: Dict[str, Set[str]]) -> SectorDiffMappin
 def cli():
     pass
 
-def __version_check(cfg_dict: Dict[str, str]):
+DataLibrary = TypedDict(
+    "DataLibrary",
+    {
+        "sectors": Dict[str, List[str]],
+        "comparator": str
+    }
+)
+ChadowConfig = TypedDict(
+    "ChadowConfig",
+    {
+        "version": str,
+        "libraryMapping": Dict[str, DataLibrary]
+    }
+)
+
+def __version_check(cfg_dict: ChadowConfig):
     """
     Side-effect-ful version check: check config version and inform user as
     necessary.
@@ -191,19 +207,19 @@ def __version_check(cfg_dict: Dict[str, str]):
     elif not version:
         logging.warning("config does not specify a version.")
 
-def __config_load(full_config_name: str):
+def __config_load(full_config_name: str) -> ChadowConfig:
     """
     Load the config from the specified filename. Also performs verification that
     the config is valid.
     """
-    config: Dict = {}
+    config: ChadowConfig = {"version": VERSION, "libraryMapping": {}}
     with open(full_config_name, "r") as config_file:
         config = json.load(config_file)
         __version_check(config)
 
     return config
 
-def __write_cfg(updated_config: Dict[str, str], config_filename: str, log_mesg: str):
+def __write_cfg(updated_config: ChadowConfig, config_filename: str, log_mesg: str):
     with open(config_filename, "w") as config_file:
         json.dump(updated_config, config_file)
     
@@ -225,7 +241,7 @@ def __make_sectorpath_dirname(
         APP_ROOT, library_name, sector_name, __normalize_path_separator(sector_path)
     )
 
-def make_default_lib(comparator: str):
+def make_default_lib(comparator: str) -> DataLibrary:
     return {
         "sectors": {},
         "comparator": comparator
@@ -273,6 +289,17 @@ def createlib(name: str, force: bool):
         else:
             logging.error("Corrupted config file. You can either fix it manually or call createlib with --force.")
             exit(ExitCodes.INVALID_CONFIG.value)
+
+@cli.command()
+def lslib():
+    config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
+    try:
+        cfg = __config_load(config_filename)
+        libs = cfg["libraryMapping"].keys()
+        print("\n".join(libs))
+    except json.decoder.JSONDecodeError:
+        logging.error("Can't read config, invalid JSON. Forcing creation of a new library would recreate a valid config but will destroy existing data.")
+        exit(ExitCodes.INVALID_CONFIG.value)
 
 @cli.command()
 @click.argument("name")
@@ -410,7 +437,7 @@ def regmedia(library: str, sector_name: str, sector_path: str):
 @click.option("--verbose", is_flag=True, default=False, help="verbose will output the index written as a text stream")
 def index(library: str, sector_name: str, sector_path: str, verbose: bool=False):
     logging.info("Indexing %s.%s.%s..." % (library, sector_name, sector_path))
-    config: Dict = {}
+    config: ChadowConfig = {"version": VERSION, "libraryMapping": {}}
 
     try:
         config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
