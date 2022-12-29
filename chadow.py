@@ -377,6 +377,21 @@ def regsector(library: str, sector_name: str):
 
 @cli.command()
 @click.argument("library")
+def lssector(library: str):
+    config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
+    try:
+        cfg = __config_load(config_filename)
+        sectors = cfg["libraryMapping"][library]["sectors"].keys()
+        print("\n".join(sectors))
+    except json.decoder.JSONDecodeError:
+        logging.error("Can't read config, invalid JSON. Forcing creation of a new library would recreate a valid config but will destroy existing data.")
+        exit(ExitCodes.INVALID_CONFIG.value)
+    except KeyError:
+        logging.error("Expected config structure not found. Was the config edited manually?")
+        exit(ExitCodes.STATE_CONFLICT.value)
+
+@cli.command()
+@click.argument("library")
 @click.argument("sector_name")
 @click.argument("sector_path")
 def regmedia(library: str, sector_name: str, sector_path: str):
@@ -429,6 +444,23 @@ def regmedia(library: str, sector_name: str, sector_path: str):
         logging.error("config file not found. Is chadow installed properly?")
         logging.error(fnfe, exc_info=True)
         exit(ExitCodes.CONFIG_NOT_FOUND.value)
+
+@cli.command()
+@click.argument("library")
+@click.argument("sector_name")
+def lsmedia(library: str, sector_name: str):
+    config_filename = os.path.join(APP_ROOT, CONFIG_NAME)
+    try:
+        cfg = __config_load(config_filename)
+        paths = cfg["libraryMapping"][library]["sectors"][sector_name]
+        print("\n".join(paths))
+    except json.decoder.JSONDecodeError:
+        logging.error("Can't read config, invalid JSON. Forcing creation of a new library would recreate a valid config but will destroy existing data.")
+        exit(ExitCodes.INVALID_CONFIG.value)
+    except KeyError:
+        logging.error("Expected config structure not found. Was the config edited manually?")
+        exit(ExitCodes.STATE_CONFLICT.value)
+
 
 @cli.command()
 @click.argument("library")
