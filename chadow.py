@@ -192,6 +192,7 @@ ChadowConfig = TypedDict(
     "ChadowConfig",
     {
         "version": str,
+        "installationId": str,
         "libraryMapping": Dict[str, DataLibrary]
     }
 )
@@ -224,6 +225,11 @@ def __write_cfg(updated_config: ChadowConfig, config_filename: str, log_mesg: st
         json.dump(updated_config, config_file)
     
     logging.info(log_mesg)
+
+def __read_metadata(metadata_path: str) -> Set[str]:
+    with open(metadata_path) as metadata:
+        manager_ids = set([uuid for uuid in metadata])
+        return manager_ids
 
 def __normalize_path_separator(path: str):
     return path.replace(os.path.sep, PATH_SEPARATOR_REPLACEMENT) 
@@ -411,7 +417,13 @@ def regmedia(library: str, sector_name: str, sector_path: str):
         config = __config_load(config_filename)
         metadata_path = os.path.join(sector_path, CHADOW_METADATA)
         if os.path.isfile(metadata_path):
-            logging.error("specified path %s is already registered." % sector_path)
+            managers = __read_metadata(metadata_path)
+
+            if config["installationId"] in managers:
+                logging.error("specified path %s is already registered." % sector_path)
+                exit(ExitCodes.STATE_CONFLICT.value)
+        elif os.path.isdir(metadata_path):
+            logging.error("Reserved metadata path is a directory. Please verify %s." % metadata_path)
             exit(ExitCodes.STATE_CONFLICT.value)
 
         try:

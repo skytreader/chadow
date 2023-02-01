@@ -14,6 +14,7 @@ from click.testing import CliRunner
 
 DEFAULT_CONFIG = {
     "version": "0.1.0",
+    "installationId": "unit-testing-config",
     "libraryMapping": {}
 }
 
@@ -191,15 +192,22 @@ class RegMediaTests(ChadowTests):
     def setUp(self):
         super().setUp()
         self.config = copy.deepcopy(DEFAULT_CONFIG)
+        self.metadata_path = "/media/testpath/.chadow-metadata"
         self.config["libraryMapping"]["testlib"] = chadow.make_default_lib("filename")
         self.config["libraryMapping"]["testlib"]["sectors"]["sector1"] = []
+        self.__open_mock_map = {
+            self.full_config_path: json.dumps(self.config),
+            self.metadata_path: DEFAULT_CONFIG["installationId"]
+        }
+        self.open_mock_side_effect = lambda path, mode="": unittest.mock.mock_open(read_data=self.__open_mock_map[path]).return_value
 
     @unittest.mock.patch("chadow.json.dump")
     @unittest.mock.patch("chadow.os.path.isdir")
     @unittest.mock.patch("chadow.os.mkdir")
     def test_regmedia(self, mock_mkdir, mock_isdir, mock_json_dump):
-        mock_isdir.return_value = True
-        _mock_open = unittest.mock.mock_open(read_data=json.dumps(self.config))
+        mock_isdir.side_effect = lambda _dir: _dir != self.metadata_path
+        _mock_open = unittest.mock.mock_open()
+        _mock_open.side_effect = self.open_mock_side_effect
         with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
             self._verify_call(chadow.regmedia, ["testlib", "sector1", "/media/testpath"])
             self.config["libraryMapping"]["testlib"]["sectors"]["sector1"].append("/media/testpath")
@@ -213,8 +221,9 @@ class RegMediaTests(ChadowTests):
     @unittest.mock.patch("chadow.os.mkdir")
     def test_regmedia_metadata_exists(self, mock_mkdir, mock_isdir, mock_json_dump, mock_isfile):
         mock_isfile.return_value = True
-        mock_isdir.return_value = True
-        _mock_open = unittest.mock.mock_open(read_data=json.dumps(self.config))
+        mock_isdir.side_effect = lambda _dir: _dir != self.metadata_path
+        _mock_open = unittest.mock.mock_open()
+        _mock_open.side_effect = self.open_mock_side_effect
         with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
             self._verify_call(
                 chadow.regmedia,

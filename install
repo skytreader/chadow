@@ -8,7 +8,8 @@ echo "This is the chadow install script."
 mkdir ~/.chadow
 touch ~/.chadow/config.json
 version="$(cat VERSION)"
-echo "{\"version\": \"$version\", \"libraryMapping\":{}}" > ~/.chadow/config.json
+iid="$(uuidgen)"
+echo "{\"version\": \"$version\", \"installationId\": \"$iid\", \"libraryMapping\":{}}" > ~/.chadow/config.json
 
 # Turn off -u because this is not our script
 set +e +u
