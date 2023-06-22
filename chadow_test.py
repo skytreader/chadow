@@ -1,4 +1,3 @@
-import argparse
 import chadow
 import copy
 import json
@@ -231,6 +230,26 @@ class RegMediaTests(ChadowTests):
                 ExitCodes.STATE_CONFLICT.value
             )
 
+    @unittest.mock.patch("chadow.os.path.isfile")
+    @unittest.mock.patch("chadow.json.dump")
+    @unittest.mock.patch("chadow.os.path.isdir")
+    @unittest.mock.patch("chadow.os.mkdir")
+    def test_regmedia_metadata_exists_installationId_dne(self, mock_mkdir, mock_isdir, mock_json_dump, mock_isfile):
+        mock_isfile.return_value = True
+        mock_isdir.side_effect = lambda _dir: _dir != self.metadata_path
+        _mock_open = unittest.mock.mock_open()
+        _mock_open.side_effect = lambda path, mode="": unittest.mock.mock_open(
+            read_data={
+                self.full_config_path: json.dumps(self.config),
+                self.metadata_path: "a-different-installationId"
+            }
+        )
+        with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
+            self._verify_call(
+                chadow.regmedia,
+                ["testlib", "sector1", "/media/testpath"]
+            )
+
     @unittest.mock.patch("chadow.json.dump")
     @unittest.mock.patch("chadow.os.path.isdir")
     @unittest.mock.patch("chadow.os.mkdir")
@@ -377,24 +396,4 @@ class IndexTests(ChadowTests):
             mock_os_walk.assert_not_called()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        prog="chadow test suite",
-        description="tests for the chadow back-up system"
-    )
-    parser.add_argument(
-        "-s", "--suite", required=False, type=str,
-        help="Pass the name of a test suite class to run those tests exclusively."
-    )
-    args = vars(parser.parse_args())
-    has_no_suite = args.get("suite") is None
-    tests_to_run = (
-        sys.modules[__name__]
-        if has_no_suite else
-        getattr(sys.modules[__name__], args["suite"])
-    )
-    tests = (
-        unittest.TestLoader().loadTestsFromModule(tests_to_run)
-        if has_no_suite else
-        unittest.TestLoader().loadTestsFromTestCase(tests_to_run)
-    )
-    unittest.TextTestRunner(verbosity=2, stream=sys.stdout).run(tests)
+    unittest.main()

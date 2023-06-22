@@ -48,6 +48,3 @@ compare the consistency of sectors in the library.
 
 Having installed `requirements.txt`, you can test by simply running the
 `chadow_test.py` file in this repo.
-
-The test script also features some convenience params which you can view by
-running `python chadow_test.py -h`.

@@ -227,6 +227,11 @@ def __write_cfg(updated_config: ChadowConfig, config_filename: str, log_mesg: st
     logging.info(log_mesg)
 
 def __read_metadata(metadata_path: str) -> Set[str]:
+    """
+    chadow leaves metadata on the media that it manages. This is a custom format
+    which should hold minimal data. At the moment, it only holds installationIds
+    which manage the given medium.
+    """
     with open(metadata_path) as metadata:
         manager_ids = set([uuid for uuid in metadata])
         return manager_ids
