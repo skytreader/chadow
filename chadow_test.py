@@ -242,8 +242,8 @@ class RegMediaTests(ChadowTests):
             read_data={
                 self.full_config_path: json.dumps(self.config),
                 self.metadata_path: "a-different-installationId"
-            }
-        )
+            }[path]
+        ).return_value
         with unittest.mock.patch("chadow.open", _mock_open) as mock_open:
             self._verify_call(
                 chadow.regmedia,
